@@ -17,7 +17,10 @@ button { cursor: pointer; }
 :focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
 #app { height: 100%; max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; }
 .top { display: flex; align-items: center; gap: 12px; padding-block: 14px 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); border-bottom: 3px solid var(--ink); }
-.top h1 { margin: 0; font-size: 20px; letter-spacing: 1px; flex-grow: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.top { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; }
+.top h1 { margin: 0; font-size: 18px; letter-spacing: 1px; text-align: center; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sq:disabled { opacity: .35; cursor: default; }
+.ttl { margin: 0; font-size: 20px; letter-spacing: 1px; text-wrap: balance; overflow-wrap: anywhere; }
 .sq { width: 44px; height: 44px; flex-shrink: 0; border: 3px solid var(--ink); background: var(--card); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; padding: 0; }
 main { flex-grow: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding-block: 16px 24px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 3px solid var(--ink); background: var(--card); padding-bottom: env(safe-area-inset-bottom, 0px); }
@@ -164,9 +167,11 @@ var IC = {
 };
 
 // ---------- vistas ----------
+// Cabecera común: volver a la izquierda, nombre de la app centrado; el título de la pantalla va al principio del contenido.
 function topBar(title, back, right) {
-  return '<div class="top">' + (back ? '<button class="sq" data-act="' + back + '" aria-label="Volver">←</button>' : '') +
-    '<h1>' + h(title) + '</h1>' + (right || '') + '</div>';
+  topBar.title = S.view === 'inicio' ? '' : title;
+  return '<div class="top"><button class="sq" data-act="back" aria-label="Volver atrás"' + (S.view === 'inicio' ? ' disabled' : '') + '>←</button>' +
+    '<h1>GASTOS_DISFRUTANDO</h1>' + (right || '<span></span>') + '</div>';
 }
 function navBar() {
   var items = [['inicio', 'INICIO', IC.home], ['grupos', 'GRUPOS', IC.groups], ['actividad', 'ACTIVIDAD', IC.act], ['cuenta', 'CUENTA', IC.user]];
@@ -416,7 +421,9 @@ function render() {
   try { s1 = a.selectionStart; s2 = a.selectionEnd; } catch (e) {}
   var main = document.querySelector('main'), scroll = main ? main.scrollTop : 0;
   var v = S.view;
-  document.getElementById('app').innerHTML = v === 'inicio' ? vInicio() : v === 'actividad' ? vActividad() : v === 'cuenta' ? vCuenta() : v === 'nuevo' ? vNuevo() : v === 'gasto' ? vGasto() : vGrupos();
+  var out = v === 'inicio' ? vInicio() : v === 'actividad' ? vActividad() : v === 'cuenta' ? vCuenta() : v === 'nuevo' ? vNuevo() : v === 'gasto' ? vGasto() : vGrupos();
+  if (topBar.title) out = out.replace('<main>', '<main><h2 class="ttl">' + h(topBar.title) + '</h2>');
+  document.getElementById('app').innerHTML = out;
   var m2 = document.querySelector('main'); if (m2 && render.keep) m2.scrollTop = scroll;
   render.keep = false;
   if (fid) { var el = document.getElementById(fid); if (el) { el.focus(); try { if (s1 != null) el.setSelectionRange(s1, s2); } catch (e) {} } }
@@ -426,7 +433,15 @@ function render() {
 function usedIn(removed, match) {
   return removed.filter(function (id) { return S.expenses.some(function (x) { return match(x) && (x.payer === id || x.shares[id] !== undefined); }); });
 }
+// Historial de pantallas para el botón de volver atrás.
+var HIST = [];
+var NAV = ['go', 'goGroups', 'gastoEn', 'gOpen', 'gOpenSub'];
+function snap() { return { view: S.view, mode: G.mode, gId: G.gId, sId: G.sId }; }
 var A = {
+  back: function () {
+    var p = HIST.pop() || { view: 'inicio', mode: 'list' };
+    S.view = p.view; G.mode = p.mode; G.gId = p.gId; G.sId = p.sId; G.editId = G.confirmId = null; G.err = '';
+  },
   go: function (d) { S.view = d.v; if (d.v === 'nuevo') resetNG(); if (d.v === 'gasto') resetAG(); if (d.v === 'grupos') G.mode = 'list'; G.err = ''; CU.saved = false; },
   // Desde Inicio: gasto en ese grupo, con el subgrupo del último gasto dado de alta en él.
   gastoEn: function (d) {
@@ -579,8 +594,17 @@ function onFile(el) {
 document.addEventListener('click', function (e) {
   var b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
   var fn = A[b.dataset.act]; if (!fn) return;
-  if (['go', 'goGroups', 'gastoEn'].indexOf(b.dataset.act) === -1) render.keep = true;
-  fn(b.dataset); render();
+  var act = b.dataset.act;
+  if (NAV.indexOf(act) !== -1 || act === 'back') {
+    var before = snap();
+    if (act !== 'back') HIST.push(before);
+    fn(b.dataset);
+    var now = snap();
+    if (act !== 'back' && JSON.stringify(before) === JSON.stringify(now)) HIST.pop();
+    if (S.view === 'inicio') HIST = [];
+    if (act === 'gOpen' || act === 'gOpenSub') render.keep = true;
+  } else { render.keep = true; fn(b.dataset); }
+  render();
 });
 document.addEventListener('input', function (e) {
   var el = e.target; if (!el.dataset || !IN[el.dataset.in] || el.tagName === 'SELECT' || el.type === 'checkbox') return;
