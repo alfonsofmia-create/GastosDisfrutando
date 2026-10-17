@@ -20,6 +20,25 @@ button { cursor: pointer; }
 .top { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; }
 .top h1 { margin: 0; font-size: 18px; letter-spacing: 1px; text-align: center; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sq:disabled { opacity: .35; cursor: default; }
+.top h1.two { font-size: clamp(10px, 3vw, 18px); letter-spacing: -0.3px; }
+.crumb { font-weight: 400; }
+main.compact { gap: 8px; padding-block: 10px 12px; }
+.compact .lbl { font-size: 11px; gap: 3px; }
+.compact .in { height: 44px; font-size: 15px; }
+.compact .amount { box-shadow: 4px 4px 0 var(--ink); }
+.compact .amount input { height: 50px; font-size: 26px; }
+.compact .amount span { font-size: 22px; }
+.compact .chips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
+.compact .chip { min-height: 40px; flex-shrink: 0; white-space: nowrap; }
+.compact .addline input, .compact .addline button { height: 40px; }
+.compact .seg button { height: 44px; font-size: 13px; }
+.compact .seg { border-width: 2px; }
+.compact .seg button { border-left-width: 2px; }
+.compact .row { min-height: 40px; padding: 4px 10px; }
+.compact .share { height: 34px; }
+.compact .split { max-height: 132px; overflow-y: auto; }
+.compact .btn { height: 52px; }
+.compact .err { padding: 6px 8px; font-size: 12px; }
 .ttl { margin: 0; font-size: 20px; letter-spacing: 1px; text-wrap: balance; overflow-wrap: anywhere; }
 .sq { width: 44px; height: 44px; flex-shrink: 0; border: 3px solid var(--ink); background: var(--card); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; padding: 0; }
 main { flex-grow: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding-block: 16px 24px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
@@ -169,9 +188,9 @@ var IC = {
 // ---------- vistas ----------
 // Cabecera común: volver a la izquierda, nombre de la app centrado; el título de la pantalla va al principio del contenido.
 function topBar(title, back, right) {
-  topBar.title = S.view === 'inicio' ? '' : title;
+  var sub = S.view === 'inicio' ? '' : '<span class="crumb"> / ' + h(title) + '</span>';
   return '<div class="top"><button class="sq" data-act="back" aria-label="Volver atrás"' + (S.view === 'inicio' ? ' disabled' : '') + '>←</button>' +
-    '<h1>GASTOS_DISFRUTANDO</h1>' + (right || '<span></span>') + '</div>';
+    '<h1' + (sub ? ' class="two"' : '') + '>GASTOS_DISFRUTANDO' + sub + '</h1>' + (right || '<span></span>') + '</div>';
 }
 function navBar() {
   var items = [['inicio', 'INICIO', IC.home], ['grupos', 'GRUPOS', IC.groups], ['actividad', 'ACTIVIDAD', IC.act], ['cuenta', 'CUENTA', IC.user]];
@@ -388,28 +407,32 @@ function vGasto() {
       '<button class="btn" data-act="go" data-v="inicio">IR A INICIO</button><button class="dash" data-act="agAgain">+ AÑADIR OTRO</button></main>' + navBar();
   }
   var c = agCtx(), you = function (id) { return nameOf(id) + (id === S.me ? ' (TÚ)' : ''); };
-  html += notice() + '<label class="lbl">IMPORTE *<span class="amount"><input id="ag-amount" inputmode="decimal" data-in="ag" data-k="amount" value="' + h(AG.amount) + '" placeholder="0,00"><span>€</span></span></label>' +
+  html = html.replace('<main>', '<main class="compact">');
+  html += notice() +
+    '<div style="display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:10px;align-items:end">' +
+    '<label class="lbl">IMPORTE *<span class="amount"><input id="ag-amount" inputmode="decimal" data-in="ag" data-k="amount" value="' + h(AG.amount) + '" placeholder="0,00"><span>€</span></span></label>' +
+    '<label class="lbl">FECHA<input class="in" id="ag-date" type="date" data-in="ag" data-k="date" value="' + h(AG.date) + '"></label></div>' +
     '<label class="lbl">CONCEPTO *<input class="in" id="ag-concept" data-in="ag" data-k="concept" value="' + h(AG.concept) + '" placeholder="Ej.: Compra Mercadona"></label>' +
-    '<span class="lbl">CATEGORÍA * · ' + (AG.cat ? (AG.manualCat ? 'ELEGIDA POR TI' : 'SUGERIDA · TOCA PARA CAMBIAR') : 'SE SUGIERE SEGÚN EL CONCEPTO') + '</span>' +
-    chips(S.cats.map(function (x) { return { id: x, name: x, on: AG.cat === x }; }), 'agCat') +
+    '<span class="lbl">CATEGORÍA *</span>' +
+    (S.cats.length ? chips(S.cats.map(function (x) { return { id: x, name: x, on: AG.cat === x }; }), 'agCat') : '') +
     '<div class="addline"><label class="grow" style="display:flex"><span class="vh">Nueva categoría</span><input id="ag-newcat" data-in="ag" data-k="newCat" value="' + h(AG.newCat) + '" placeholder="Nueva categoría"></label><button data-act="agAddCat">+ AÑADIR</button></div>' +
     '<div class="pair"><label class="lbl" style="min-width:0">GRUPO *<select class="in" id="ag-group" data-in="agGroup"><option value="">Elige…</option>' +
     S.groups.map(function (g) { return '<option value="' + h(g.id) + '"' + (g.id === AG.group ? ' selected' : '') + '>' + h(g.name) + '</option>'; }).join('') + '</select></label>' +
     '<label class="lbl" style="min-width:0">SUBGRUPO *<select class="in" id="ag-sub" data-in="agSub"' + (c.g ? '' : ' disabled') + '><option value="">Elige…</option>' +
     c.subs.map(function (s) { return '<option value="' + h(s.id) + '"' + (s.id === AG.sub ? ' selected' : '') + '>' + h(s.name) + '</option>'; }).join('') + '</select></label></div>' +
-    '<label class="lbl">FECHA<input class="in" id="ag-date" type="date" data-in="ag" data-k="date" value="' + h(AG.date) + '"></label>' +
-    '<label class="lbl">PAGÓ *<select class="in" id="ag-payer" data-in="agPayer"' + (c.sub ? '' : ' disabled') + '><option value="">Elige…</option>' +
+    '<div class="pair"><label class="lbl" style="min-width:0">PAGÓ *<select class="in" id="ag-payer" data-in="agPayer"' + (c.sub ? '' : ' disabled') + '><option value="">Elige…</option>' +
     c.members.map(function (id) { return '<option value="' + h(id) + '"' + (id === AG.payer ? ' selected' : '') + '>' + h(you(id)) + '</option>'; }).join('') + '</select></label>' +
-    '<span class="lbl">REPARTO</span><div class="seg">' + [['equal', 'IGUAL'], ['pct', '%'], ['exact', 'EXACTO']].map(function (m) {
-      return '<button data-act="agMode" data-id="' + m[0] + '" aria-pressed="' + (AG.mode === m[0]) + '">' + m[1] + '</button>';
-    }).join('') + '</div><div class="box" style="border-width:2px">' +
+    '<span class="lbl" style="min-width:0">REPARTO<span class="seg">' + [['equal', 'IGUAL'], ['pct', '%'], ['exact', '€']].map(function (m) {
+      return '<button data-act="agMode" data-id="' + m[0] + '" aria-pressed="' + (AG.mode === m[0]) + '"' + (m[0] === 'exact' ? ' aria-label="Importes exactos"' : m[0] === 'pct' ? ' aria-label="Porcentajes"' : '') + '>' + m[1] + '</button>';
+    }).join('') + '</span></span></div>' +
+    '<div class="box" style="border-width:2px"><div class="split">' +
     c.members.map(function (id) {
-      var amt = '<b class="num" style="min-width:84px;text-align:right">' + eur(c.sp.shares[id] || 0) + '</b>';
+      var amt = '<b class="num" style="min-width:76px;text-align:right">' + eur(c.sp.shares[id] || 0) + '</b>';
       if (AG.mode === 'equal') return '<div class="row"><label class="grow" style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" class="check" id="ag-on-' + h(id) + '" data-in="agOn" data-id="' + h(id) + '"' + (AG.off[id] ? '' : ' checked') + '>' + h(you(id)) + '</label>' + amt + '</div>';
       return '<div class="row"><span class="grow">' + h(you(id)) + '</span><input class="share" id="ag-v-' + h(id) + '" inputmode="decimal" data-in="agVal" data-id="' + h(id) + '" value="' + h(AG.vals[id] || '') + '" aria-label="Parte de ' + h(you(id)) + '"><span>' + (AG.mode === 'pct' ? '%' : '€') + '</span>' + amt + '</div>';
     }).join('') +
-    (c.members.length ? '' : '<div class="row muted">' + (c.sub ? 'Este subgrupo no tiene miembros. Añádelos en Grupos.' : 'Elige un subgrupo para ver sus miembros.') + '</div>') +
-    '<div class="row status' + (c.sp.ok ? '' : ' bad') + '">' + h(c.sp.text) + '</div></div>' +
+    (c.members.length ? '' : '<div class="row muted">' + (c.sub ? 'Este subgrupo no tiene miembros. Añádelos en Grupos.' : 'Elige un subgrupo para ver el reparto.') + '</div>') +
+    '</div>' + (c.members.length ? '<div class="row status' + (c.sp.ok ? '' : ' bad') + '" style="border-top:2px dashed var(--ink);border-bottom:none">' + h(c.sp.text) + '</div>' : '') + '</div>' +
     (AG.err ? '<span class="err" role="alert">' + h(AG.err) + '</span>' : '') +
     '<button class="btn" data-act="agSave"' + (AG.saving ? ' disabled' : '') + '>' + (AG.saving ? 'GUARDANDO…' : 'GUARDAR ↵') + '</button>';
   return html + '</main>' + navBar();
@@ -422,7 +445,6 @@ function render() {
   var main = document.querySelector('main'), scroll = main ? main.scrollTop : 0;
   var v = S.view;
   var out = v === 'inicio' ? vInicio() : v === 'actividad' ? vActividad() : v === 'cuenta' ? vCuenta() : v === 'nuevo' ? vNuevo() : v === 'gasto' ? vGasto() : vGrupos();
-  if (topBar.title) out = out.replace('<main>', '<main><h2 class="ttl">' + h(topBar.title) + '</h2>');
   document.getElementById('app').innerHTML = out;
   var m2 = document.querySelector('main'); if (m2 && render.keep) m2.scrollTop = scroll;
   render.keep = false;
