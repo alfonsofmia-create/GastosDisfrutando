@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>A · Teclado primero</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #101114; color: #F2F2EE; font-family: 'Space Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; padding: 20px 20px 24px; gap: 16px">
+  <div style="display: flex; justify-content: space-between; align-items: center">
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <span style="font-size: 13px; color: #A3A6AD">Balance</span>
+      <span style="font-size: 17px; font-weight: 500">Sam te debe <span style="color: {{accent}}">42,30 €</span></span>
+    </div>
+    <button aria-label="Historial" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid #2A2C33; background: transparent; color: #F2F2EE; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>
+    </button>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px">
+    <span style="font-size: 72px; font-weight: 700; letter-spacing: -2px">24,50<span style="font-size: 36px; color: #A3A6AD"> €</span></span>
+    <label style="display: flex; width: 100%">
+      <span style="position: absolute; left: -9999px">Concepto</span>
+      <input type="text" value="Cena japonés" style="width: 100%; text-align: center; background: transparent; border: none; border-bottom: 1px solid #2A2C33; color: #F2F2EE; font: inherit; font-size: 18px; padding: 10px 0">
+    </label>
+    <div style="display: flex; gap: 8px">
+      <button style="height: 36px; padding: 0 14px; border-radius: 18px; border: none; background: #23252B; color: #F2F2EE; font-size: 14px">Hoy</button>
+      <button style="height: 36px; padding: 0 14px; border-radius: 18px; border: none; background: #23252B; color: #F2F2EE; font-size: 14px">Restaurante</button>
+      <button style="height: 36px; padding: 0 14px; border-radius: 18px; border: none; background: #23252B; color: #F2F2EE; font-size: 14px">50 / 50</button>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; background: #1A1B20; padding: 4px; border-radius: 14px">
+    <button style="height: 44px; border-radius: 10px; border: none; background: {{accent}}; color: #101114; font-size: 15px; font-weight: 700">Pagué yo</button>
+    <button style="height: 44px; border-radius: 10px; border: none; background: transparent; color: #A3A6AD; font-size: 15px">Pagó Sam</button>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+    <sc-for list="{{keys}}" as="k" hint-placeholder-count="12">
+      <button style="height: 56px; border-radius: 12px; border: none; background: #1A1B20; color: #F2F2EE; font-size: 24px">{{k}}</button>
+    </sc-for>
+  </div>
+
+  <button style="height: 56px; border-radius: 16px; border: none; background: #F2F2EE; color: #101114; font-size: 17px; font-weight: 700">Añadir gasto</button>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#C6F36B","options":["#C6F36B","#7CC7FF","#FFB86B"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { accent: this.props.accent ?? '#C6F36B', keys: ['1','2','3','4','5','6','7','8','9',',','0','⌫'] };
+  }
+}
+</script>
+</body>
+</html>
