@@ -6,7 +6,7 @@ App para llevar la contabilidad de gastos compartidos entre 2 personas (estilo S
 
 App en uso y diseño en curso. Estilo elegido: **ticket de caja** (amarillo, monoespaciada, bordes negros gruesos).
 
-- **App** (datos compartidos y permanentes): https://claude.ai/artifact/VwKj8MkNLWsE7tS8WjSmZ8 — fuente en [`app/index.html`](app/index.html). Cada persona entra con su cuenta de claude.ai y se registra en Cuenta. Datos en la base de datos del artefacto: colecciones `personas` (id de usuario de claude.ai), `grupos`, `gastos` y el documento `config/categorias`.
+- **App** (datos compartidos y permanentes): https://claude.ai/artifact/VwKj8MkNLWsE7tS8WjSmZ8 — fuente en [`app/index.html`](app/index.html). Cada persona entra con su cuenta de claude.ai y se registra en Cuenta. Datos en la base de datos del artefacto: colecciones `personas` (id de usuario de claude.ai), `grupos`, `gastos` y el documento `config/categorias`. En Inicio, tocar un grupo abre «Añadir gasto» en ese grupo (con el subgrupo del último gasto); la foto del grupo se cambia al editarlo en Grupos.
 - Lienzo con los bocetos: https://claude.ai/artifact/PePYNCrFDjppLXP556QkFy (privado)
 - Fuentes en [`bocetos/`](bocetos/):
   - `Inicio.dc.html` — inicio: saldo general calculado con los gastos (y desglose por persona), grupos con su saldo (foto configurable), crear grupo, «Añadir gasto» y barra inferior (Inicio · Grupos · Actividad · Cuenta).

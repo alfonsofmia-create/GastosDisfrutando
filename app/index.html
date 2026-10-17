@@ -57,6 +57,7 @@ select.in { padding: 0 8px; font-size: 15px; }
 .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .err { font-size: 13px; font-weight: 700; color: var(--bad); background: var(--card); border: 2px solid var(--bad); padding: 8px; }
 .empty { border: 3px dashed var(--ink); padding: 20px; text-align: center; font-size: 14px; font-weight: 700; }
+.gcard { flex-direction: row; padding: 0; width: 100%; font: inherit; color: inherit; }
 .icon { width: 52px; align-self: stretch; border: none; border-left: 2px dashed var(--ink); background: transparent; display: flex; align-items: center; justify-content: center; }
 .icon.del { color: var(--bad); }
 .open { flex-grow: 1; min-width: 0; border: none; background: transparent; text-align: left; padding: 12px; display: flex; flex-direction: column; gap: 2px; }
@@ -202,11 +203,10 @@ function vInicio() {
   S.groups.forEach(function (g) {
     var mine = S.expenses.filter(function (x) { return x.group === g.id; }), n = balances(mine), b = total(n), det = netLines(n).join(' · ');
     var bal = !mine.length ? ['SIN MOVIMIENTOS', '', (g.subs || []).length + ' subgrupos'] : b > 0 ? ['+' + eur(b) + ' TE DEBEN', 'good', det] : b < 0 ? ['−' + eur(b) + ' DEBES', 'bad', det] : ['SALDADO', '', det || mine.length + ' gastos'];
-    html += '<div class="box" style="flex-direction:row"><label class="photo">' +
-      '<input type="file" accept="image/*" data-in="gphoto" data-id="' + h(g.id) + '" aria-label="Cambiar foto de ' + h(g.name) + '">' +
-      (g.photo ? '<img src="' + h(g.photo) + '" alt="">' : IC.cam + 'FOTO') + '</label>' +
-      '<span class="grow" style="padding:10px 12px;display:flex;flex-direction:column;gap:2px"><b style="font-size:16px">' + h(g.name) + '</b>' +
-      '<span class="num ' + bal[1] + '" style="font-size:17px">' + h(bal[0]) + '</span><span class="muted">' + h(bal[2]) + '</span></span></div>';
+    html += '<button class="box gcard" data-act="gastoEn" data-id="' + h(g.id) + '" aria-label="Añadir gasto en ' + h(g.name) + '"><span class="photo" style="cursor:inherit">' +
+      (g.photo ? '<img src="' + h(g.photo) + '" alt="">' : IC.cam) + '</span>' +
+      '<span class="grow" style="padding:10px 12px;display:flex;flex-direction:column;gap:2px;text-align:left"><b style="font-size:16px">' + h(g.name) + '</b>' +
+      '<span class="num ' + bal[1] + '" style="font-size:17px">' + h(bal[0]) + '</span><span class="muted">' + h(bal[2]) + '</span></span><span style="align-self:center;padding-right:12px;font-weight:700">+ ›</span></button>';
   });
   html += '<div style="flex-grow:1"></div><button class="btn" style="width:auto;align-self:flex-end;padding:0 22px" data-act="go" data-v="gasto">+ AÑADIR GASTO</button></main>' + navBar();
   return html;
@@ -302,7 +302,10 @@ function vGrupos() {
       html += '<div class="box">';
       if (G.editId === x.id) {
         html += '<div style="padding:12px;display:flex;flex-direction:column;gap:10px">' +
-          '<label class="lbl">NOMBRE DEL GRUPO<input class="in" id="g-draft" data-in="g" data-k="draft" value="' + h(G.draft) + '"></label>' +
+          '<div style="display:flex;gap:12px;align-items:flex-end"><label class="photo" style="width:76px;min-height:76px;height:76px">' +
+          '<input type="file" accept="image/*" data-in="gphoto" data-id="' + h(x.id) + '" aria-label="Cambiar foto de ' + h(x.name) + '">' +
+          (x.photo ? '<img src="' + h(x.photo) + '" alt="">' : IC.cam + 'FOTO') + '</label>' +
+          '<label class="lbl grow">NOMBRE DEL GRUPO<input class="in" id="g-draft" data-in="g" data-k="draft" value="' + h(G.draft) + '"></label></div>' +
           '<span class="lbl">MIEMBROS (' + G.draftMembers.length + ')</span>' + memberChips(ppl) +
           '<span class="lbl">SUBGRUPOS (' + G.draftSubs.length + ')</span><div class="box" style="border-width:2px">' +
           G.draftSubs.map(function (s) { return '<div class="row" style="padding-right:0"><span>' + h(s.name) + '</span><button class="icon del" data-act="gDelDraftSub" data-id="' + h(s.id) + '" aria-label="Quitar ' + h(s.name) + '">×</button></div>'; }).join('') +
@@ -425,6 +428,15 @@ function usedIn(removed, match) {
 }
 var A = {
   go: function (d) { S.view = d.v; if (d.v === 'nuevo') resetNG(); if (d.v === 'gasto') resetAG(); if (d.v === 'grupos') G.mode = 'list'; G.err = ''; CU.saved = false; },
+  // Desde Inicio: gasto en ese grupo, con el subgrupo del último gasto dado de alta en él.
+  gastoEn: function (d) {
+    resetAG(); S.view = 'gasto';
+    var g = group(d.id); if (!g) return;
+    AG.group = g.id;
+    var last = S.expenses.filter(function (x) { return x.group === g.id; }).sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); })[0];
+    var sub = last && (g.subs || []).filter(function (s) { return s.id === last.sub; })[0];
+    if (sub) { AG.sub = sub.id; AG.payer = (sub.members || []).indexOf(S.me) !== -1 ? S.me : ''; }
+  },
   goGroups: function () { S.view = 'grupos'; G.mode = 'list'; },
   // Cuenta
   cuEdit: function () { var p = S.people[S.me] || {}; CU = { editing: true, name: p.name || '', email: p.email || '', err: '', saved: false }; },
@@ -567,7 +579,7 @@ function onFile(el) {
 document.addEventListener('click', function (e) {
   var b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
   var fn = A[b.dataset.act]; if (!fn) return;
-  if (b.dataset.act !== 'go' && b.dataset.act !== 'goGroups') render.keep = true;
+  if (['go', 'goGroups', 'gastoEn'].indexOf(b.dataset.act) === -1) render.keep = true;
   fn(b.dataset); render();
 });
 document.addEventListener('input', function (e) {
