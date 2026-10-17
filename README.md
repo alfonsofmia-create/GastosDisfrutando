@@ -8,7 +8,12 @@ Fase de diseño. Estilo elegido: **ticket de caja** (amarillo, monoespaciada, bo
 
 - Lienzo con los bocetos: https://claude.ai/artifact/PePYNCrFDjppLXP556QkFy (privado)
 - Fuentes en [`bocetos/`](bocetos/):
-  - `Inicio.dc.html` — pantalla de inicio: deuda total, lista de grupos, botón para crear grupo, «Añadir gasto» y barra inferior (Grupos · Actividad · Cuenta). Solo visual.
+  - `Inicio.dc.html` — inicio: deuda total, grupos (con foto configurable), crear grupo, «Añadir gasto» y barra inferior (Grupos · Actividad · Cuenta). Enlaces navegables.
+  - `NuevoGrupo.dc.html` — crear grupo (pendiente de definir).
+  - `AnadirGasto.dc.html` — añadir gasto (pendiente de definir).
+  - `Grupos.dc.html` — grupos existentes y opción de crear (pendiente de definir).
+  - `Actividad.dc.html` — últimos movimientos agrupados por día.
+  - `Cuenta.dc.html` — datos básicos del usuario.
   - `canvas.json` — disposición de los bocetos en el lienzo.
 
 ## Funcionalidad prevista
