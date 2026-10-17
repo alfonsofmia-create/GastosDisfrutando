@@ -4,14 +4,11 @@ App para llevar la contabilidad de gastos compartidos entre 2 personas (estilo S
 
 ## Estado
 
-Fase de diseño: 4 bocetos de la pantalla inicial (donde se añaden los gastos).
+Fase de diseño. Estilo elegido: **ticket de caja** (amarillo, monoespaciada, bordes negros gruesos).
 
 - Lienzo con los bocetos: https://claude.ai/artifact/PePYNCrFDjppLXP556QkFy (privado)
 - Fuentes en [`bocetos/`](bocetos/):
-  - `Main.dc.html` — **A · Teclado primero**: importe grande con teclado numérico propio.
-  - `Chat.dc.html` — **B · Conversación**: cada gasto es una burbuja; entrada de texto libre.
-  - `Tarjetas.dc.html` — **C · Balance y tarjetas**: tarjeta de saldo, formulario con categorías y últimos gastos.
-  - `Ticket.dc.html` — **D · Ticket de caja**: estilo ticket, botones grandes «Pagué yo / Pagó Sam».
+  - `Inicio.dc.html` — pantalla de inicio: deuda total, lista de grupos, botón para crear grupo, «Añadir gasto» y barra inferior (Grupos · Actividad · Cuenta). Solo visual.
   - `canvas.json` — disposición de los bocetos en el lienzo.
 
 ## Funcionalidad prevista
