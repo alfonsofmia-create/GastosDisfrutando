@@ -7,15 +7,8 @@ App para llevar la contabilidad de gastos compartidos entre 2 personas (estilo S
 App en uso y diseño en curso. Estilo elegido: **ticket de caja** (amarillo, monoespaciada, bordes negros gruesos).
 
 - **App** (datos compartidos y permanentes): https://claude.ai/artifact/VwKj8MkNLWsE7tS8WjSmZ8 — fuente en [`app/index.html`](app/index.html). Cada persona entra con su cuenta de claude.ai y se registra en Cuenta. Datos en la base de datos del artefacto: colecciones `personas` (id de usuario de claude.ai), `grupos`, `gastos` y el documento `config/categorias`. En Inicio, tocar un grupo abre «Añadir gasto» en ese grupo (con el subgrupo del último gasto); la foto del grupo se cambia al editarlo en Grupos.
-- Lienzo con los bocetos: https://claude.ai/artifact/PePYNCrFDjppLXP556QkFy (privado)
-- Fuentes en [`bocetos/`](bocetos/):
-  - `Inicio.dc.html` — inicio: saldo general calculado con los gastos (y desglose por persona), grupos con su saldo (foto configurable), crear grupo, «Añadir gasto» y barra inferior (Inicio · Grupos · Actividad · Cuenta).
-  - `NuevoGrupo.dc.html` — crear grupo: foto, nombre (obligatorio, sin duplicados), miembros (obligatorio, de las personas registradas) y subgrupos opcionales, que heredan los miembros.
-  - `AnadirGasto.dc.html` — añadir gasto: importe, concepto, categoría (obligatoria, predictiva e incremental), grupo y subgrupo (obligatorios), fecha, quién pagó (miembros del subgrupo) y reparto (igual con exclusiones, % o importes exactos).
-  - `Grupos.dc.html` — lista de grupos (editar nombre, miembros y subgrupos, borrar con confirmación, añadir); al abrir un grupo, sus subgrupos (1 nivel: crear, editar nombre y miembros, borrar); en cada subgrupo, sus miembros y «Tipos de cambio» (solo dibujado).
-  - `Actividad.dc.html` — gastos reales agrupados por día, con importe desde el punto de vista del usuario.
-  - `Cuenta.dc.html` — datos del usuario (nombre, email, foto). Al guardar el nombre, el usuario queda registrado en «Personas registradas», visibles para todos.
-  - `canvas.json` — disposición de los bocetos en el lienzo.
+- **Diseño**: la cabecera muestra «GASTOS_DISFRUTANDO» centrado, con «←» a la izquierda que vuelve a la pantalla anterior (deshabilitado en Inicio); el título de cada pantalla va al principio del contenido.
+- **Archivo histórico** (no se mantiene sincronizado con la app): lienzo de bocetos https://claude.ai/artifact/PePYNCrFDjppLXP556QkFy y sus fuentes en [`bocetos/`](bocetos/). Se usa solo para dibujar pantallas nuevas complejas antes de construirlas.
 
 ## Decisiones tomadas
 
@@ -28,7 +21,7 @@ App en uso y diseño en curso. Estilo elegido: **ticket de caja** (amarillo, mon
 - **Grupos**: con foto opcional y un solo nivel de subgrupos.
 - **Menú inferior**: Inicio · Grupos · Actividad · Cuenta (se quitó «Amigos»).
 - **Inicio**: sin lupa, sin filtro y sin textos de grupos saldados; se quitó «Gastos sin grupo».
-- **Forma de trabajar**: el usuario define cada pantalla paso a paso; no se construye nada sin su indicación. Cada cambio se prueba en el lienzo y se sube a GitHub solo cuando el usuario lo pide.
+- **Forma de trabajar**: el usuario define cada pantalla paso a paso; no se construye nada sin su indicación. Cada cambio se hace y se prueba en la app; se sube a GitHub solo cuando el usuario lo pide.
 
 ## Pendiente
 
@@ -36,7 +29,6 @@ App en uso y diseño en curso. Estilo elegido: **ticket de caja** (amarillo, mon
 - **Liquidaciones**: registrar pagos entre personas.
 - **Grupos de ejemplo** (Charming Life / Charming Travels): sin miembros; se asignarán manualmente.
 - **Permisos**: hoy cualquier persona que abra la app puede editar o borrar grupos. Valorar restringirlo.
-- **Bocetos y app**: los bocetos (`bocetos/`) siguen guardando en `localStorage`; la app es la versión real. Mantener ambos alineados.
 
 ## Funcionalidad prevista
 
