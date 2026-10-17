@@ -1,0 +1,605 @@
+<title>Gastos Disfrutando</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap">
+<style>
+/* Ticket de caja: una columna de móvil, bordes negros gruesos, sombras planas. Un solo tema a propósito. */
+:root {
+  --paper: #FFD43B; --ink: #111111; --card: #FFFFFF; --good: #1C6B3A; --bad: #B3261E;
+  --good-on-ink: #7FD69B; --bad-on-ink: #FF8A80;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  color-scheme: light;
+}
+html, body { height: 100%; }
+body { background: var(--paper); color: var(--ink); font-family: var(--mono); font-size: 15px; }
+* { box-sizing: border-box; }
+button, input, select { font-family: inherit; color: var(--ink); }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+#app { height: 100%; max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; }
+.top { display: flex; align-items: center; gap: 12px; padding-block: 14px 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); border-bottom: 3px solid var(--ink); }
+.top h1 { margin: 0; font-size: 20px; letter-spacing: 1px; flex-grow: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sq { width: 44px; height: 44px; flex-shrink: 0; border: 3px solid var(--ink); background: var(--card); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; padding: 0; }
+main { flex-grow: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding-block: 16px 24px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 3px solid var(--ink); background: var(--card); padding-bottom: env(safe-area-inset-bottom, 0px); }
+nav button { height: 64px; border: none; border-left: 3px solid var(--ink); background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; }
+nav button:first-child { border-left: none; }
+nav button[aria-current="page"] { background: var(--ink); color: var(--paper); font-weight: 700; }
+.sec { font-size: 13px; font-weight: 700; margin-top: 4px; }
+.hero { background: var(--ink); color: var(--card); padding: 14px; display: flex; flex-direction: column; gap: 4px; box-shadow: 6px 6px 0 var(--card); }
+.hero small { color: var(--paper); font-size: 12px; }
+.hero strong { font-size: 24px; }
+.box { background: var(--card); border: 3px solid var(--ink); display: flex; flex-direction: column; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-bottom: 2px dashed var(--ink); min-height: 48px; }
+.row:last-child { border-bottom: none; }
+.grow { flex-grow: 1; min-width: 0; }
+.muted { font-size: 12px; }
+.lbl { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; }
+.in { height: 52px; border: 2px solid var(--ink); padding: 0 12px; font-size: 16px; font-weight: 400; background: var(--card); width: 100%; }
+select.in { padding: 0 8px; font-size: 15px; }
+.amount { display: flex; align-items: center; background: var(--card); border: 3px solid var(--ink); box-shadow: 5px 5px 0 var(--ink); }
+.amount input { flex-grow: 1; min-width: 0; height: 72px; border: none; padding: 0 12px; font-size: 38px; font-weight: 700; background: transparent; text-align: right; }
+.amount span { font-size: 30px; font-weight: 700; padding-right: 14px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { min-height: 44px; padding: 0 12px; border: 2px solid var(--ink); background: var(--card); font-size: 13px; font-weight: 700; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); border: 3px solid var(--ink); }
+.seg button { height: 48px; border: none; border-left: 3px solid var(--ink); background: var(--card); font-size: 15px; font-weight: 700; }
+.seg button:first-child { border-left: none; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--card); }
+.addline { display: flex; border: 2px solid var(--ink); background: var(--card); }
+.addline input { flex-grow: 1; min-width: 0; height: 44px; border: none; padding: 0 12px; font-size: 15px; }
+.addline button { height: 44px; padding: 0 14px; border: none; border-left: 2px solid var(--ink); background: var(--ink); color: var(--card); font-weight: 700; }
+.btn { height: 56px; border: 3px solid var(--ink); background: var(--ink); color: var(--card); font-size: 16px; font-weight: 700; box-shadow: 5px 5px 0 var(--card); width: 100%; }
+.btn.alt { background: var(--card); color: var(--ink); box-shadow: none; }
+.btn.small { height: 44px; font-size: 14px; box-shadow: none; }
+.btn.danger { background: var(--bad); border-color: var(--bad); box-shadow: none; }
+.dash { border: 2px dashed var(--ink); background: transparent; height: 48px; font-size: 14px; font-weight: 700; width: 100%; }
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.err { font-size: 13px; font-weight: 700; color: var(--bad); background: var(--card); border: 2px solid var(--bad); padding: 8px; }
+.empty { border: 3px dashed var(--ink); padding: 20px; text-align: center; font-size: 14px; font-weight: 700; }
+.icon { width: 52px; align-self: stretch; border: none; border-left: 2px dashed var(--ink); background: transparent; display: flex; align-items: center; justify-content: center; }
+.icon.del { color: var(--bad); }
+.open { flex-grow: 1; min-width: 0; border: none; background: transparent; text-align: left; padding: 12px; display: flex; flex-direction: column; gap: 2px; }
+.open b { font-size: 16px; }
+.photo { width: 76px; min-height: 86px; flex-shrink: 0; background: var(--ink); color: var(--paper); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; cursor: pointer; font-size: 10px; font-weight: 700; flex-direction: column; gap: 4px; }
+.photo img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+.photo input, .avatar input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.avatar { width: 64px; height: 64px; flex-shrink: 0; background: var(--paper); color: var(--ink); display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; position: relative; overflow: hidden; cursor: pointer; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+.num { font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 700; }
+.good { color: var(--good); } .bad { color: var(--bad); }
+.share { width: 76px; height: 40px; border: 2px solid var(--ink); padding: 0 6px; font-size: 15px; text-align: right; }
+.check { width: 22px; height: 22px; accent-color: var(--ink); }
+.status { font-size: 13px; font-weight: 700; }
+.vh { position: absolute; left: -9999px; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div id="app">
+  <div class="top"><h1>GASTOS_DISFRUTANDO</h1></div>
+  <main><div class="empty">CARGANDO DATOS…</div></main>
+</div>
+
+<script>
+'use strict';
+var S = { view: 'inicio', me: null, db: null, ready: false, offline: false, people: {}, groups: [], expenses: [], cats: [] };
+var G = { mode: 'list', gId: null, sId: null, editId: null, confirmId: null, draft: '', draftMembers: [], draftSubs: [], newSub: '', err: '' };
+var NG, AG, CU;
+function resetNG() { NG = { name: '', photo: '', members: S.me ? [S.me] : [], subs: [], newSub: '', err: '', done: null }; }
+function resetAG() { AG = { amount: '', concept: '', cat: '', manualCat: false, newCat: '', group: '', sub: '', date: today(), payer: '', mode: 'equal', off: {}, vals: {}, err: '', done: null, saving: false }; }
+function resetCU() { CU = { editing: false, name: '', email: '', err: '', saved: false }; }
+resetNG(); resetAG(); resetCU();
+
+// ---------- utilidades ----------
+function h(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function uid() { return 'x' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }
+function num(v) { var n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? 0 : n; }
+function r2(n) { return Math.round(n * 100) / 100; }
+function eur(n) { return Math.abs(n).toFixed(2).replace('.', ',') + ' €'; }
+function iso(d) { return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
+function today() { return iso(new Date()); }
+function nameOf(id) { var p = S.people[id]; return p && p.name ? p.name : '?'; }
+function namesOf(ids) { var n = (ids || []).filter(function (id) { return S.people[id]; }).map(nameOf); return n.length ? n.join(', ') : 'Sin miembros'; }
+function group(id) { return S.groups.filter(function (g) { return g.id === id; })[0]; }
+function words(t) { return (t || '').toLowerCase().split(/[^a-z0-9áéíóúüñ]+/).filter(function (w) { return w.length >= 3; }); }
+function resize(file, size, cb) {
+  var reader = new FileReader();
+  reader.onload = function () {
+    var img = new Image();
+    img.onload = function () {
+      var c = document.createElement('canvas'); c.width = size; c.height = size;
+      var side = Math.min(img.width, img.height);
+      c.getContext('2d').drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size);
+      cb(c.toDataURL('image/jpeg', 0.8));
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+// Saldo con cada persona desde el punto de vista de "me": positivo = te debe.
+function balances(list) {
+  var net = {}, me = S.me;
+  list.forEach(function (x) {
+    if (!x.shares) return;
+    if (x.payer === me) Object.keys(x.shares).forEach(function (id) { if (id !== me) net[id] = (net[id] || 0) + x.shares[id]; });
+    else if (x.shares[me]) net[x.payer] = (net[x.payer] || 0) - x.shares[me];
+  });
+  Object.keys(net).forEach(function (id) { net[id] = r2(net[id]); if (!net[id]) delete net[id]; });
+  return net;
+}
+function netLines(net) { return Object.keys(net).map(function (id) { return net[id] > 0 ? nameOf(id) + ' te debe ' + eur(net[id]) : 'Debes a ' + nameOf(id) + ' ' + eur(net[id]); }); }
+function total(net) { var t = 0; Object.keys(net).forEach(function (k) { t += net[k]; }); return r2(t); }
+function predict(text) {
+  var w = words(text); if (!w.length) return '';
+  var list = S.expenses.slice().sort(function (a, b) { return (a.createdAt || 0) - (b.createdAt || 0); });
+  for (var i = list.length - 1; i >= 0; i--) {
+    var p = list[i]; if (!p.category || S.cats.indexOf(p.category) === -1) continue;
+    var pw = words(p.concept);
+    if (w.some(function (x) { return pw.indexOf(x) !== -1; })) return p.category;
+  }
+  return '';
+}
+
+// ---------- base de datos ----------
+function write(promise, onErr) {
+  return promise.catch(function (e) {
+    var msg = e && e.code === 'quota_exceeded' ? 'La base de datos está llena.' : 'No se pudo guardar. Revisa la conexión e inténtalo otra vez.';
+    if (onErr) onErr(msg); else { G.err = msg; render(); }
+    throw e;
+  });
+}
+function saveGroup(g) { var body = Object.assign({}, g); delete body.id; return S.db.doc('grupos/' + g.id).set(body); }
+
+// ---------- iconos ----------
+var IC = {
+  home: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>',
+  groups: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M15 14c3 0 6 1.8 6 5"/></svg>',
+  act: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 17l5-6 4 4 8-9"/><path d="M3 21h18"/></svg>',
+  user: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>',
+  addGroup: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="13" cy="8" r="3.5"/><path d="M6.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><path d="M4 7v6"/><path d="M1 10h6"/></svg>',
+  cam: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  edit: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>',
+  trash: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg>'
+};
+
+// ---------- vistas ----------
+function top(title, back, right) {
+  return '<div class="top">' + (back ? '<button class="sq" data-act="' + back + '" aria-label="Volver">←</button>' : '') +
+    '<h1>' + h(title) + '</h1>' + (right || '') + '</div>';
+}
+function navBar() {
+  var items = [['inicio', 'INICIO', IC.home], ['grupos', 'GRUPOS', IC.groups], ['actividad', 'ACTIVIDAD', IC.act], ['cuenta', 'CUENTA', IC.user]];
+  return '<nav>' + items.map(function (i) {
+    var on = S.view === i[0] || (i[0] === 'grupos' && S.view === 'nuevo');
+    return '<button data-act="go" data-v="' + i[0] + '"' + (on ? ' aria-current="page"' : '') + '>' + i[2] + i[1] + '</button>';
+  }).join('') + '</nav>';
+}
+function notice() {
+  if (S.offline) return '<div class="err" role="alert">No se pudo conectar con los datos compartidos. Abre la app desde claude.ai.</div>';
+  if (!S.me) return '<div class="err" role="alert">No se pudo identificar tu cuenta de claude.ai. Inicia sesión para usar la app.</div>';
+  if (!S.people[S.me]) return '<div class="err" role="status">Regístrate en CUENTA con tu nombre para que te puedan añadir a grupos.</div>';
+  return '';
+}
+function chips(list, act) {
+  return '<div class="chips">' + list.map(function (c) {
+    return '<button class="chip" data-act="' + act + '" data-id="' + h(c.id) + '" aria-pressed="' + (c.on ? 'true' : 'false') + '">' + h(c.name) + '</button>';
+  }).join('') + '</div>';
+}
+function peopleList() {
+  return Object.keys(S.people).map(function (id) { return { id: id, name: S.people[id].name }; })
+    .sort(function (a, b) { return a.name.localeCompare(b.name); });
+}
+
+function vInicio() {
+  var net = balances(S.expenses), t = total(net);
+  var head = !S.me ? 'SIN CUENTA' : t > 0 ? 'TE DEBEN ' + eur(t) : t < 0 ? 'DEBES ' + eur(t) : 'TODO SALDADO';
+  var color = t > 0 ? 'var(--good-on-ink)' : t < 0 ? 'var(--bad-on-ink)' : 'var(--card)';
+  var html = top('GASTOS_DISFRUTANDO', null, '<button class="sq" data-act="go" data-v="nuevo" aria-label="Crear grupo">' + IC.addGroup + '</button>') + '<main>' + notice() +
+    '<div class="hero"><small>EN GENERAL</small><strong style="color:' + color + '">' + h(head) + '</strong>' +
+    netLines(net).map(function (l) { return '<span class="muted">' + h(l) + '</span>'; }).join('') + '</div>' +
+    '<span class="sec">&gt; GRUPOS</span>';
+  if (!S.groups.length) html += '<div class="empty">NO HAY GRUPOS TODAVÍA</div>';
+  S.groups.forEach(function (g) {
+    var mine = S.expenses.filter(function (x) { return x.group === g.id; }), n = balances(mine), b = total(n), det = netLines(n).join(' · ');
+    var bal = !mine.length ? ['SIN MOVIMIENTOS', '', (g.subs || []).length + ' subgrupos'] : b > 0 ? ['+' + eur(b) + ' TE DEBEN', 'good', det] : b < 0 ? ['−' + eur(b) + ' DEBES', 'bad', det] : ['SALDADO', '', det || mine.length + ' gastos'];
+    html += '<div class="box" style="flex-direction:row"><label class="photo">' +
+      '<input type="file" accept="image/*" data-in="gphoto" data-id="' + h(g.id) + '" aria-label="Cambiar foto de ' + h(g.name) + '">' +
+      (g.photo ? '<img src="' + h(g.photo) + '" alt="">' : IC.cam + 'FOTO') + '</label>' +
+      '<span class="grow" style="padding:10px 12px;display:flex;flex-direction:column;gap:2px"><b style="font-size:16px">' + h(g.name) + '</b>' +
+      '<span class="num ' + bal[1] + '" style="font-size:17px">' + h(bal[0]) + '</span><span class="muted">' + h(bal[2]) + '</span></span></div>';
+  });
+  html += '<div style="flex-grow:1"></div><button class="btn" style="width:auto;align-self:flex-end;padding:0 22px" data-act="go" data-v="gasto">+ AÑADIR GASTO</button></main>' + navBar();
+  return html;
+}
+
+function vActividad() {
+  var list = S.expenses.slice().sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : (b.createdAt || 0) - (a.createdAt || 0); });
+  var y = iso(new Date(Date.now() - 86400000)), days = [];
+  list.forEach(function (x) {
+    var p = x.date.split('-'), label = x.date === today() ? 'HOY' : x.date === y ? 'AYER' : p[2] + '/' + p[1] + '/' + p[0];
+    var d = days[days.length - 1]; if (!d || d.label !== label) { d = { label: label, items: [] }; days.push(d); }
+    d.items.push(x);
+  });
+  var html = top('ACTIVIDAD', null) + '<main>' + notice();
+  if (!days.length) html += '<div class="empty">SIN MOVIMIENTOS TODAVÍA</div>';
+  days.forEach(function (d) {
+    html += '<span class="sec">&gt; ' + d.label + '</span><div class="box">' + d.items.map(function (x) {
+      var g = group(x.group) || { name: '—', subs: [] }, sub = (g.subs || []).filter(function (s) { return s.id === x.sub; })[0];
+      var mine = x.shares[S.me] || 0, amt, cls;
+      if (x.payer === S.me) { amt = '+' + eur(x.amount - mine); cls = 'good'; }
+      else if (mine) { amt = '−' + eur(mine); cls = 'bad'; }
+      else { amt = eur(x.amount); cls = ''; }
+      return '<div class="row"><span class="grow" style="display:flex;flex-direction:column;gap:2px"><b>' + h(x.concept) + '</b><span class="muted">' +
+        h((x.payer === S.me ? 'Pagaste tú' : 'Pagó ' + nameOf(x.payer)) + ' · ' + x.category + ' · ' + g.name + (sub ? ' / ' + sub.name : '')) +
+        '</span></span><span class="num ' + cls + '">' + amt + '</span></div>';
+    }).join('') + '</div>';
+  });
+  return html + '</main>' + navBar();
+}
+
+function vCuenta() {
+  var p = S.people[S.me] || {};
+  var html = top('CUENTA', null) + '<main>' + (S.offline || !S.me ? notice() : '') +
+    '<div class="hero" style="flex-direction:row;align-items:center;gap:14px"><label class="avatar">' +
+    '<input type="file" accept="image/*" data-in="avatar" aria-label="Cambiar foto de perfil">' +
+    (p.avatar ? '<img src="' + h(p.avatar) + '" alt="">' : h(p.name ? p.name.charAt(0).toUpperCase() : '?')) + '</label>' +
+    '<span class="grow" style="display:flex;flex-direction:column;gap:2px"><strong style="font-size:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + h(p.name || '[TU NOMBRE]') +
+    '</strong><small style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + h(p.email || '[tu@email.com]') + '</small></span></div>' +
+    '<span class="sec">&gt; DATOS</span>';
+  if (!CU.editing) {
+    html += '<div class="box"><div class="row"><span>NOMBRE</span><b>' + h(p.name || '—') + '</b></div><div class="row"><span>EMAIL</span><b style="word-break:break-all;text-align:right">' + h(p.email || '—') +
+      '</b></div><div class="row"><span>MONEDA</span><b>EUR (€)</b></div></div>' + (CU.saved ? '<span class="status" role="status">✓ DATOS GUARDADOS</span>' : '') +
+      '<button class="btn" data-act="cuEdit"' + (S.me ? '' : ' disabled') + '>' + (p.name ? 'EDITAR DATOS' : 'REGISTRARME') + '</button>';
+  } else {
+    html += '<label class="lbl">NOMBRE *<input class="in" id="cu-name" data-in="cu" data-k="name" value="' + h(CU.name) + '" autocomplete="name"></label>' +
+      '<label class="lbl">EMAIL *<input class="in" id="cu-email" type="email" data-in="cu" data-k="email" value="' + h(CU.email) + '" autocomplete="email"></label>' +
+      (CU.err ? '<span class="err" role="alert">' + h(CU.err) + '</span>' : '') +
+      '<div class="pair"><button class="btn alt" data-act="cuCancel">CANCELAR</button><button class="btn" style="box-shadow:none" data-act="cuSave">GUARDAR ↵</button></div>';
+  }
+  var ppl = peopleList();
+  html += '<span class="sec">&gt; PERSONAS REGISTRADAS (' + ppl.length + ')</span><div class="box">' +
+    (ppl.length ? ppl.map(function (x) { return '<div class="row"><b>' + h(x.name) + '</b><span>' + (x.id === S.me ? 'TÚ' : '') + '</span></div>'; }).join('') : '<div class="row muted">Nadie se ha registrado todavía.</div>') +
+    '</div><span class="muted">Tu nombre es visible para todos y se puede añadir a cualquier grupo o subgrupo.</span>';
+  return html + '</main>' + navBar();
+}
+
+function vNuevo() {
+  var html = top('NUEVO_GRUPO', 'goGroups') + '<main>';
+  if (NG.done) {
+    return html + '<div class="hero"><small>✓ GRUPO CREADO</small><strong>' + h(NG.done.name) + '</strong><span class="muted">' + NG.done.subs + ' subgrupos</span></div>' +
+      '<button class="btn" data-act="go" data-v="inicio">IR A INICIO</button><button class="btn alt" data-act="goGroups">VER GRUPOS</button>' +
+      '<button class="dash" data-act="ngAgain">+ CREAR OTRO</button></main>' + navBar();
+  }
+  var ppl = peopleList();
+  html += '<div style="display:flex;gap:14px;align-items:flex-end"><label class="photo" style="width:96px;min-height:96px;height:96px;border:3px solid var(--ink)">' +
+    '<input type="file" accept="image/*" data-in="ngphoto" aria-label="Elegir foto del grupo">' + (NG.photo ? '<img src="' + h(NG.photo) + '" alt="">' : IC.cam + '+ FOTO') + '</label>' +
+    '<label class="lbl grow">NOMBRE DEL GRUPO *<input class="in" id="ng-name" data-in="ng" data-k="name" value="' + h(NG.name) + '" placeholder="Ej.: Casa"></label></div>' +
+    '<span class="sec">&gt; MIEMBROS (' + NG.members.length + ') *</span>' +
+    (ppl.length ? chips(ppl.map(function (p) { return { id: p.id, name: p.name, on: NG.members.indexOf(p.id) !== -1 }; }), 'ngMember') : '<span class="muted">No hay personas registradas. Cada persona se registra en Cuenta.</span>') +
+    '<span class="sec">&gt; SUBGRUPOS (' + NG.subs.length + ') · OPCIONAL</span><div class="box">' +
+    NG.subs.map(function (s, i) { return '<div class="row" style="padding-right:0"><span>' + h(s) + '</span><button class="icon del" data-act="ngDelSub" data-i="' + i + '" aria-label="Quitar ' + h(s) + '">×</button></div>'; }).join('') +
+    '<div class="addline" style="border:none"><label class="grow" style="display:flex"><span class="vh">Nuevo subgrupo</span><input id="ng-sub" data-in="ng" data-k="newSub" value="' + h(NG.newSub) + '" placeholder="Nuevo subgrupo"></label><button data-act="ngAddSub">+ AÑADIR</button></div></div>' +
+    '<span class="muted">Moneda: EUR (€) · Los subgrupos heredan los miembros del grupo</span>' +
+    (NG.err ? '<span class="err" role="alert">' + h(NG.err) + '</span>' : '') +
+    '<div class="pair"><button class="btn alt" data-act="goGroups">CANCELAR</button><button class="btn" data-act="ngCreate">CREAR GRUPO ↵</button></div>';
+  return html + '</main>' + navBar();
+}
+
+function vGrupos() {
+  var g = group(G.gId), sub = g && (g.subs || []).filter(function (s) { return s.id === G.sId; })[0];
+  if (G.mode === 'sub' && !sub) G.mode = g ? 'group' : 'list';
+  if (G.mode === 'group' && !g) G.mode = 'list';
+  var title = G.mode === 'list' ? 'GRUPOS' : G.mode === 'group' ? g.name : sub.name.toUpperCase();
+  var html = top(title, G.mode === 'list' ? null : 'gBack', G.mode === 'list' ? '<button class="sq" data-act="go" data-v="nuevo" aria-label="Crear grupo">' + IC.addGroup + '</button>' : '') + '<main>' +
+    (G.err ? '<span class="err" role="alert">' + h(G.err) + '</span>' : '');
+  var ppl = peopleList();
+  function memberChips(pool) {
+    return pool.length ? chips(pool.map(function (p) { return { id: p.id, name: p.name, on: G.draftMembers.indexOf(p.id) !== -1 }; }), 'gMember') : '<span class="muted">No hay personas para elegir.</span>';
+  }
+  if (G.mode === 'list') {
+    html += '<span class="sec">&gt; TUS GRUPOS (' + S.groups.length + ')</span>';
+    S.groups.forEach(function (x) {
+      html += '<div class="box">';
+      if (G.editId === x.id) {
+        html += '<div style="padding:12px;display:flex;flex-direction:column;gap:10px">' +
+          '<label class="lbl">NOMBRE DEL GRUPO<input class="in" id="g-draft" data-in="g" data-k="draft" value="' + h(G.draft) + '"></label>' +
+          '<span class="lbl">MIEMBROS (' + G.draftMembers.length + ')</span>' + memberChips(ppl) +
+          '<span class="lbl">SUBGRUPOS (' + G.draftSubs.length + ')</span><div class="box" style="border-width:2px">' +
+          G.draftSubs.map(function (s) { return '<div class="row" style="padding-right:0"><span>' + h(s.name) + '</span><button class="icon del" data-act="gDelDraftSub" data-id="' + h(s.id) + '" aria-label="Quitar ' + h(s.name) + '">×</button></div>'; }).join('') +
+          '<div class="addline" style="border:none"><label class="grow" style="display:flex"><span class="vh">Nuevo subgrupo</span><input id="g-newsub" data-in="g" data-k="newSub" value="' + h(G.newSub) + '" placeholder="Nuevo subgrupo"></label><button data-act="gAddDraftSub">+ AÑADIR</button></div></div>' +
+          '<div class="pair"><button class="btn alt small" data-act="gCancel">CANCELAR</button><button class="btn small" data-act="gSaveGroup" data-id="' + h(x.id) + '">GUARDAR</button></div></div>';
+      } else if (G.confirmId === x.id) {
+        html += '<div style="padding:12px;display:flex;flex-direction:column;gap:10px"><b>¿BORRAR «' + h(x.name) + '» Y SUS ' + (x.subs || []).length + ' SUBGRUPOS?</b>' +
+          '<div class="pair"><button class="btn alt small" data-act="gCancel">NO</button><button class="btn small danger" data-act="gDelGroup" data-id="' + h(x.id) + '">SÍ, BORRAR</button></div></div>';
+      } else {
+        html += '<div style="display:flex"><button class="open" data-act="gOpen" data-id="' + h(x.id) + '"><b>' + h(x.name) + '</b><span class="muted">' + h(namesOf(x.members)) + '</span><span class="muted">' + (x.subs || []).length + ' subgrupos ›</span></button>' +
+          '<button class="icon" data-act="gEdit" data-id="' + h(x.id) + '" aria-label="Editar ' + h(x.name) + '">' + IC.edit + '</button>' +
+          '<button class="icon del" data-act="gAsk" data-id="' + h(x.id) + '" aria-label="Borrar ' + h(x.name) + '">' + IC.trash + '</button></div>';
+      }
+      html += '</div>';
+    });
+    if (!S.groups.length) html += '<div class="empty">NO HAY GRUPOS TODAVÍA</div>';
+    html += '<button class="btn" data-act="go" data-v="nuevo">+ AÑADIR GRUPO</button>';
+  } else if (G.mode === 'group') {
+    var pool = ppl.filter(function (p) { return (g.members || []).indexOf(p.id) !== -1; });
+    html += '<span class="muted">Miembros: ' + h(namesOf(g.members)) + '</span><span class="sec">&gt; SUBGRUPOS (' + (g.subs || []).length + ')</span>';
+    (g.subs || []).forEach(function (s) {
+      html += '<div class="box">';
+      if (G.editId === s.id) {
+        html += '<div style="padding:12px;display:flex;flex-direction:column;gap:10px"><label class="lbl">NOMBRE DEL SUBGRUPO<input class="in" id="s-draft" data-in="g" data-k="draft" value="' + h(G.draft) + '"></label>' +
+          '<span class="lbl">MIEMBROS (' + G.draftMembers.length + ')</span>' + memberChips(pool) +
+          '<div class="pair"><button class="btn alt small" data-act="gCancel">CANCELAR</button><button class="btn small" data-act="gSaveSub" data-id="' + h(s.id) + '">GUARDAR</button></div></div>';
+      } else if (G.confirmId === s.id) {
+        html += '<div style="padding:12px;display:flex;flex-direction:column;gap:10px"><b>¿BORRAR «' + h(s.name) + '»?</b><div class="pair"><button class="btn alt small" data-act="gCancel">NO</button><button class="btn small danger" data-act="gDelSub" data-id="' + h(s.id) + '">SÍ, BORRAR</button></div></div>';
+      } else {
+        html += '<div style="display:flex"><button class="open" data-act="gOpenSub" data-id="' + h(s.id) + '"><b>' + h(s.name) + ' ›</b><span class="muted">' + h(namesOf(s.members)) + '</span></button>' +
+          '<button class="icon" data-act="gEditSub" data-id="' + h(s.id) + '" aria-label="Editar ' + h(s.name) + '">' + IC.edit + '</button>' +
+          '<button class="icon del" data-act="gAskSub" data-id="' + h(s.id) + '" aria-label="Borrar ' + h(s.name) + '">' + IC.trash + '</button></div>';
+      }
+      html += '</div>';
+    });
+    if (!(g.subs || []).length) html += '<div class="empty">SIN SUBGRUPOS</div>';
+    html += '<div class="box" style="padding:12px;gap:10px;box-shadow:6px 6px 0 var(--ink)"><label class="lbl">&gt; NUEVO SUBGRUPO<input class="in" id="g-newsub2" data-in="g" data-k="newSub" value="' + h(G.newSub) + '" placeholder="Ej.: Viaje a Roma"></label>' +
+      '<button class="btn small" data-act="gCreateSub">+ CREAR SUBGRUPO</button></div>';
+  } else {
+    html += '<span class="muted">' + h(g.name) + ' › ' + h(sub.name) + '</span><span class="sec">&gt; MIEMBROS</span><div class="box" style="padding:12px">' + h(namesOf(sub.members)) + '</div>' +
+      '<span class="sec">&gt; TIPOS DE CAMBIO</span><div class="box"><div class="row"><span>MONEDA BASE</span><b>EUR (€)</b></div></div><div class="empty" style="font-size:13px">PENDIENTE DE DEFINIR</div>';
+  }
+  return html + '</main>' + navBar();
+}
+
+function split(members) {
+  var total = r2(num(AG.amount)), shares = {}, sum = 0;
+  if (AG.mode === 'equal') {
+    var on = members.filter(function (id) { return !AG.off[id]; });
+    var each = on.length ? Math.floor(total * 100 / on.length) / 100 : 0, rest = r2(total - each * on.length);
+    on.forEach(function (id, i) { shares[id] = r2(each + (i === 0 ? rest : 0)); });
+    return { shares: shares, total: total, ok: on.length > 0, text: on.length + ' participantes' };
+  }
+  members.forEach(function (id) {
+    var v = num(AG.vals[id] || 0), amt = AG.mode === 'pct' ? r2(total * v / 100) : r2(v);
+    sum += v; if (amt) shares[id] = amt;
+  });
+  if (AG.mode === 'pct') {
+    var ok = Math.abs(sum - 100) < 0.01, keys = Object.keys(shares), got = keys.reduce(function (a, k) { return a + shares[k]; }, 0);
+    if (ok && keys.length) shares[keys[0]] = r2(shares[keys[0]] + total - got);
+    return { shares: shares, total: total, ok: ok, text: 'Suma: ' + r2(sum) + ' % de 100 %' };
+  }
+  var okE = Math.abs(sum - total) < 0.005;
+  return { shares: shares, total: total, ok: okE, text: 'Suma: ' + eur(r2(sum)) + ' de ' + eur(total) };
+}
+function agCtx() {
+  var g = group(AG.group), subs = g ? (g.subs || []) : [], sub = subs.filter(function (s) { return s.id === AG.sub; })[0];
+  var members = sub ? (sub.members || []).filter(function (id) { return S.people[id]; }) : [];
+  return { g: g, subs: subs, sub: sub, members: members, sp: split(members) };
+}
+function vGasto() {
+  var html = top('AÑADIR_GASTO', null) + '<main>';
+  if (AG.done) {
+    return html + '<div class="hero"><small>✓ GASTO GUARDADO</small><strong>' + h(AG.done.amount) + '</strong><span class="muted">' + h(AG.done.text) + '</span></div>' +
+      '<button class="btn" data-act="go" data-v="inicio">IR A INICIO</button><button class="dash" data-act="agAgain">+ AÑADIR OTRO</button></main>' + navBar();
+  }
+  var c = agCtx(), you = function (id) { return nameOf(id) + (id === S.me ? ' (TÚ)' : ''); };
+  html += notice() + '<label class="lbl">IMPORTE *<span class="amount"><input id="ag-amount" inputmode="decimal" data-in="ag" data-k="amount" value="' + h(AG.amount) + '" placeholder="0,00"><span>€</span></span></label>' +
+    '<label class="lbl">CONCEPTO *<input class="in" id="ag-concept" data-in="ag" data-k="concept" value="' + h(AG.concept) + '" placeholder="Ej.: Compra Mercadona"></label>' +
+    '<span class="lbl">CATEGORÍA * · ' + (AG.cat ? (AG.manualCat ? 'ELEGIDA POR TI' : 'SUGERIDA · TOCA PARA CAMBIAR') : 'SE SUGIERE SEGÚN EL CONCEPTO') + '</span>' +
+    chips(S.cats.map(function (x) { return { id: x, name: x, on: AG.cat === x }; }), 'agCat') +
+    '<div class="addline"><label class="grow" style="display:flex"><span class="vh">Nueva categoría</span><input id="ag-newcat" data-in="ag" data-k="newCat" value="' + h(AG.newCat) + '" placeholder="Nueva categoría"></label><button data-act="agAddCat">+ AÑADIR</button></div>' +
+    '<div class="pair"><label class="lbl" style="min-width:0">GRUPO *<select class="in" id="ag-group" data-in="agGroup"><option value="">Elige…</option>' +
+    S.groups.map(function (g) { return '<option value="' + h(g.id) + '"' + (g.id === AG.group ? ' selected' : '') + '>' + h(g.name) + '</option>'; }).join('') + '</select></label>' +
+    '<label class="lbl" style="min-width:0">SUBGRUPO *<select class="in" id="ag-sub" data-in="agSub"' + (c.g ? '' : ' disabled') + '><option value="">Elige…</option>' +
+    c.subs.map(function (s) { return '<option value="' + h(s.id) + '"' + (s.id === AG.sub ? ' selected' : '') + '>' + h(s.name) + '</option>'; }).join('') + '</select></label></div>' +
+    '<label class="lbl">FECHA<input class="in" id="ag-date" type="date" data-in="ag" data-k="date" value="' + h(AG.date) + '"></label>' +
+    '<label class="lbl">PAGÓ *<select class="in" id="ag-payer" data-in="agPayer"' + (c.sub ? '' : ' disabled') + '><option value="">Elige…</option>' +
+    c.members.map(function (id) { return '<option value="' + h(id) + '"' + (id === AG.payer ? ' selected' : '') + '>' + h(you(id)) + '</option>'; }).join('') + '</select></label>' +
+    '<span class="lbl">REPARTO</span><div class="seg">' + [['equal', 'IGUAL'], ['pct', '%'], ['exact', 'EXACTO']].map(function (m) {
+      return '<button data-act="agMode" data-id="' + m[0] + '" aria-pressed="' + (AG.mode === m[0]) + '">' + m[1] + '</button>';
+    }).join('') + '</div><div class="box" style="border-width:2px">' +
+    c.members.map(function (id) {
+      var amt = '<b class="num" style="min-width:84px;text-align:right">' + eur(c.sp.shares[id] || 0) + '</b>';
+      if (AG.mode === 'equal') return '<div class="row"><label class="grow" style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" class="check" id="ag-on-' + h(id) + '" data-in="agOn" data-id="' + h(id) + '"' + (AG.off[id] ? '' : ' checked') + '>' + h(you(id)) + '</label>' + amt + '</div>';
+      return '<div class="row"><span class="grow">' + h(you(id)) + '</span><input class="share" id="ag-v-' + h(id) + '" inputmode="decimal" data-in="agVal" data-id="' + h(id) + '" value="' + h(AG.vals[id] || '') + '" aria-label="Parte de ' + h(you(id)) + '"><span>' + (AG.mode === 'pct' ? '%' : '€') + '</span>' + amt + '</div>';
+    }).join('') +
+    (c.members.length ? '' : '<div class="row muted">' + (c.sub ? 'Este subgrupo no tiene miembros. Añádelos en Grupos.' : 'Elige un subgrupo para ver sus miembros.') + '</div>') +
+    '<div class="row status' + (c.sp.ok ? '' : ' bad') + '">' + h(c.sp.text) + '</div></div>' +
+    (AG.err ? '<span class="err" role="alert">' + h(AG.err) + '</span>' : '') +
+    '<button class="btn" data-act="agSave"' + (AG.saving ? ' disabled' : '') + '>' + (AG.saving ? 'GUARDANDO…' : 'GUARDAR ↵') + '</button>';
+  return html + '</main>' + navBar();
+}
+
+// ---------- render conservando foco ----------
+function render() {
+  var a = document.activeElement, fid = a && a.id, s1 = null, s2 = null;
+  try { s1 = a.selectionStart; s2 = a.selectionEnd; } catch (e) {}
+  var main = document.querySelector('main'), scroll = main ? main.scrollTop : 0;
+  var v = S.view;
+  document.getElementById('app').innerHTML = v === 'inicio' ? vInicio() : v === 'actividad' ? vActividad() : v === 'cuenta' ? vCuenta() : v === 'nuevo' ? vNuevo() : v === 'gasto' ? vGasto() : vGrupos();
+  var m2 = document.querySelector('main'); if (m2 && render.keep) m2.scrollTop = scroll;
+  render.keep = false;
+  if (fid) { var el = document.getElementById(fid); if (el) { el.focus(); try { if (s1 != null) el.setSelectionRange(s1, s2); } catch (e) {} } }
+}
+
+// ---------- acciones ----------
+function usedIn(removed, match) {
+  return removed.filter(function (id) { return S.expenses.some(function (x) { return match(x) && (x.payer === id || x.shares[id] !== undefined); }); });
+}
+var A = {
+  go: function (d) { S.view = d.v; if (d.v === 'nuevo') resetNG(); if (d.v === 'gasto') resetAG(); if (d.v === 'grupos') G.mode = 'list'; G.err = ''; CU.saved = false; },
+  goGroups: function () { S.view = 'grupos'; G.mode = 'list'; },
+  // Cuenta
+  cuEdit: function () { var p = S.people[S.me] || {}; CU = { editing: true, name: p.name || '', email: p.email || '', err: '', saved: false }; },
+  cuCancel: function () { CU.editing = false; CU.err = ''; },
+  cuSave: function () {
+    var name = CU.name.trim(), email = CU.email.trim();
+    if (!name) { CU.err = 'Escribe tu nombre.'; return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { CU.err = 'El email no es válido.'; return; }
+    var dup = Object.keys(S.people).some(function (id) { return id !== S.me && S.people[id].name.toLowerCase() === name.toLowerCase(); });
+    if (dup) { CU.err = 'Ya hay otra persona con ese nombre. Añade tu apellido.'; return; }
+    var p = Object.assign({}, S.people[S.me] || {}, { name: name, email: email });
+    write(S.db.doc('personas/' + S.me).set(p), function (m) { CU.err = m; CU.editing = true; render(); });
+    CU.editing = false; CU.saved = true;
+  },
+  // Nuevo grupo
+  ngMember: function (d) { var i = NG.members.indexOf(d.id); if (i === -1) NG.members.push(d.id); else NG.members.splice(i, 1); NG.err = ''; },
+  ngAddSub: function () { var n = NG.newSub.trim(); if (n) { NG.subs.push(n); NG.newSub = ''; } },
+  ngDelSub: function (d) { NG.subs.splice(+d.i, 1); },
+  ngAgain: function () { resetNG(); },
+  ngCreate: function () {
+    var name = NG.name.trim().toUpperCase();
+    if (!name) { NG.err = 'Escribe el nombre del grupo.'; return; }
+    if (S.groups.some(function (g) { return g.name === name; })) { NG.err = 'Ya existe un grupo con ese nombre.'; return; }
+    if (!NG.members.length) { NG.err = 'Elige al menos un miembro.'; return; }
+    var subs = NG.subs.slice(); if (NG.newSub.trim()) subs.push(NG.newSub.trim());
+    var g = { id: uid(), name: name, photo: NG.photo, members: NG.members.slice(), createdAt: Date.now(),
+      subs: subs.map(function (s) { return { id: uid(), name: s, members: NG.members.slice() }; }) };
+    write(saveGroup(g), function (m) { NG.done = null; NG.err = m; render(); });
+    NG.done = { name: name, subs: subs.length };
+  },
+  // Grupos
+  gOpen: function (d) { G.mode = 'group'; G.gId = d.id; G.editId = G.confirmId = null; G.newSub = ''; G.err = ''; },
+  gOpenSub: function (d) { G.mode = 'sub'; G.sId = d.id; G.editId = G.confirmId = null; },
+  gBack: function () { if (G.mode === 'sub') G.mode = 'group'; else G.mode = 'list'; G.editId = G.confirmId = null; G.err = ''; },
+  gCancel: function () { G.editId = G.confirmId = null; G.err = ''; },
+  gEdit: function (d) { var g = group(d.id); G.editId = d.id; G.confirmId = null; G.draft = g.name; G.newSub = ''; G.draftSubs = (g.subs || []).slice(); G.draftMembers = (g.members || []).slice(); G.err = ''; },
+  gAsk: function (d) { G.confirmId = d.id; G.editId = null; },
+  gMember: function (d) { var i = G.draftMembers.indexOf(d.id); if (i === -1) G.draftMembers.push(d.id); else G.draftMembers.splice(i, 1); G.err = ''; },
+  gAddDraftSub: function () { var n = G.newSub.trim(); if (n) { G.draftSubs.push({ id: uid(), name: n, members: G.draftMembers.slice() }); G.newSub = ''; } },
+  gDelDraftSub: function (d) {
+    if (S.expenses.some(function (x) { return x.sub === d.id; })) { G.err = 'No se puede quitar un subgrupo con gastos.'; return; }
+    G.draftSubs = G.draftSubs.filter(function (s) { return s.id !== d.id; });
+  },
+  gSaveGroup: function (d) {
+    var g = group(d.id), name = G.draft.trim().toUpperCase(), members = G.draftMembers.slice();
+    if (!name) { G.err = 'Escribe el nombre del grupo.'; return; }
+    if (S.groups.some(function (x) { return x.id !== g.id && x.name === name; })) { G.err = 'Ya existe un grupo con ese nombre.'; return; }
+    var used = usedIn((g.members || []).filter(function (id) { return members.indexOf(id) === -1; }), function (x) { return x.group === g.id; });
+    if (used.length) { G.err = 'No se puede quitar a ' + namesOf(used) + ': tiene gastos en este grupo.'; return; }
+    var subs = G.draftSubs.map(function (s) { return Object.assign({}, s, { members: (s.members || []).filter(function (id) { return members.indexOf(id) !== -1; }) }); });
+    if (G.newSub.trim()) subs.push({ id: uid(), name: G.newSub.trim(), members: members.slice() });
+    write(saveGroup(Object.assign({}, g, { name: name, members: members, subs: subs })));
+    G.editId = null; G.newSub = '';
+  },
+  gDelGroup: function (d) {
+    if (S.expenses.some(function (x) { return x.group === d.id; })) { G.err = 'No se puede borrar un grupo con gastos.'; G.confirmId = null; return; }
+    write(S.db.doc('grupos/' + d.id).delete()); G.confirmId = null;
+  },
+  gCreateSub: function () {
+    var g = group(G.gId), n = G.newSub.trim(); if (!n) return;
+    write(saveGroup(Object.assign({}, g, { subs: (g.subs || []).concat([{ id: uid(), name: n, members: (g.members || []).slice() }]) })));
+    G.newSub = '';
+  },
+  gEditSub: function (d) { var s = (group(G.gId).subs || []).filter(function (x) { return x.id === d.id; })[0]; G.editId = d.id; G.confirmId = null; G.draft = s.name; G.draftMembers = (s.members || []).slice(); G.err = ''; },
+  gAskSub: function (d) { G.confirmId = d.id; G.editId = null; },
+  gSaveSub: function (d) {
+    var g = group(G.gId), s = g.subs.filter(function (x) { return x.id === d.id; })[0], name = G.draft.trim(), members = G.draftMembers.slice();
+    if (!name) { G.err = 'Escribe el nombre del subgrupo.'; return; }
+    var used = usedIn((s.members || []).filter(function (id) { return members.indexOf(id) === -1; }), function (x) { return x.sub === s.id; });
+    if (used.length) { G.err = 'No se puede quitar a ' + namesOf(used) + ': tiene gastos en este subgrupo.'; return; }
+    write(saveGroup(Object.assign({}, g, { subs: g.subs.map(function (x) { return x.id === s.id ? { id: s.id, name: name, members: members } : x; }) })));
+    G.editId = null;
+  },
+  gDelSub: function (d) {
+    if (S.expenses.some(function (x) { return x.sub === d.id; })) { G.err = 'No se puede borrar un subgrupo con gastos.'; G.confirmId = null; return; }
+    var g = group(G.gId); write(saveGroup(Object.assign({}, g, { subs: g.subs.filter(function (x) { return x.id !== d.id; }) }))); G.confirmId = null;
+  },
+  // Gasto
+  agCat: function (d) { AG.cat = AG.cat === d.id ? '' : d.id; AG.manualCat = true; AG.err = ''; },
+  agAddCat: function () {
+    var n = AG.newCat.trim().toUpperCase(); if (!n) return;
+    if (S.cats.indexOf(n) === -1) write(S.db.doc('config/categorias').set({ list: S.cats.concat([n]) }), function (m) { AG.err = m; render(); });
+    AG.cat = n; AG.manualCat = true; AG.newCat = ''; AG.err = '';
+  },
+  agMode: function (d) { AG.mode = d.id; AG.vals = {}; AG.err = ''; },
+  agAgain: function () { resetAG(); },
+  agSave: function () {
+    var c = agCtx(), err = '';
+    if (!S.me) err = 'Inicia sesión en claude.ai para guardar gastos.';
+    else if (!(c.sp.total > 0)) err = 'Escribe un importe mayor que 0.';
+    else if (!AG.concept.trim()) err = 'Escribe el concepto.';
+    else if (!AG.cat) err = 'Elige o añade una categoría.';
+    else if (!AG.group) err = 'Elige un grupo.';
+    else if (!c.subs.length) err = 'Este grupo no tiene subgrupos. Crea uno en Grupos.';
+    else if (!AG.sub) err = 'Elige un subgrupo.';
+    else if (!c.members.length) err = 'El subgrupo no tiene miembros. Añádelos en Grupos.';
+    else if (!AG.payer) err = 'Elige quién pagó.';
+    else if (!c.sp.ok) err = AG.mode === 'equal' ? 'Marca al menos una persona en el reparto.' : AG.mode === 'pct' ? 'Los porcentajes deben sumar 100 %.' : 'Las partes deben sumar el importe.';
+    if (err) { AG.err = err; return; }
+    var x = { amount: c.sp.total, concept: AG.concept.trim(), category: AG.cat, group: AG.group, sub: AG.sub, date: AG.date || today(), payer: AG.payer, shares: c.sp.shares, createdBy: S.me, createdAt: Date.now() };
+    AG.saving = true;
+    write(S.db.collection('gastos').doc(uid()).set(x), function (m) { AG.saving = false; AG.err = m; render(); }).then(function () {
+      AG.saving = false;
+      AG.done = { amount: eur(x.amount), text: x.concept + ' · ' + x.category + ' · ' + c.g.name + ' / ' + c.sub.name + ' · Pagó ' + nameOf(x.payer) };
+      render();
+    });
+  }
+};
+var IN = {
+  cu: function (el) { CU[el.dataset.k] = el.value; return false; },
+  ng: function (el) { NG[el.dataset.k] = el.value; NG.err = ''; return false; },
+  g: function (el) { G[el.dataset.k] = el.value; return false; },
+  ag: function (el) {
+    AG[el.dataset.k] = el.value; AG.err = '';
+    if (el.dataset.k === 'concept' && !AG.manualCat) AG.cat = predict(el.value);
+    return el.dataset.k === 'amount' || el.dataset.k === 'concept';
+  },
+  agGroup: function (el) { AG.group = el.value; AG.sub = ''; AG.payer = ''; AG.off = {}; AG.vals = {}; return true; },
+  agSub: function (el) {
+    AG.sub = el.value; AG.off = {}; AG.vals = {};
+    var s = (group(AG.group).subs || []).filter(function (x) { return x.id === el.value; })[0];
+    AG.payer = s && (s.members || []).indexOf(S.me) !== -1 ? S.me : ''; return true;
+  },
+  agPayer: function (el) { AG.payer = el.value; return true; },
+  agOn: function (el) { AG.off[el.dataset.id] = !el.checked; return true; },
+  agVal: function (el) { AG.vals[el.dataset.id] = el.value; return true; }
+};
+function onFile(el) {
+  var file = el.files && el.files[0]; if (!file) return;
+  var k = el.dataset.in;
+  resize(file, k === 'avatar' ? 128 : 160, function (url) {
+    if (k === 'ngphoto') { NG.photo = url; render(); }
+    else if (k === 'avatar') {
+      var p = S.people[S.me];
+      if (!p) { CU.err = 'Regístrate con tu nombre antes de poner foto.'; CU.editing = true; render(); return; }
+      write(S.db.doc('personas/' + S.me).set(Object.assign({}, p, { avatar: url })));
+    } else if (k === 'gphoto') { var g = group(el.dataset.id); if (g) write(saveGroup(Object.assign({}, g, { photo: url }))); }
+  });
+}
+document.addEventListener('click', function (e) {
+  var b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
+  var fn = A[b.dataset.act]; if (!fn) return;
+  if (b.dataset.act !== 'go' && b.dataset.act !== 'goGroups') render.keep = true;
+  fn(b.dataset); render();
+});
+document.addEventListener('input', function (e) {
+  var el = e.target; if (!el.dataset || !IN[el.dataset.in] || el.tagName === 'SELECT' || el.type === 'checkbox') return;
+  if (IN[el.dataset.in](el)) { render.keep = true; render(); }
+});
+document.addEventListener('change', function (e) {
+  var el = e.target; if (!el.dataset) return;
+  if (el.type === 'file') { onFile(el); return; }
+  if (el.tagName === 'SELECT' || el.type === 'checkbox') { if (IN[el.dataset.in] && IN[el.dataset.in](el)) { render.keep = true; render(); } }
+});
+
+// ---------- arranque ----------
+render();
+(async function () {
+  var claude = window.claude;
+  var user = claude && claude.use ? await claude.use('user') : null;
+  var db = claude && claude.use ? await claude.use('db') : null;
+  S.me = user ? await user.id() : null;
+  if (!db) { S.offline = true; S.ready = true; render(); return; }
+  S.db = db;
+  if (S.view === 'nuevo') resetNG();
+  function fail() { S.offline = true; render(); }
+  db.collection('personas').onSnapshot(function (snap) {
+    var p = {}; snap.docs.forEach(function (d) { var v = d.data(); if (v && v.name) p[d.id] = v; }); S.people = p; render.keep = true; render();
+  }, fail);
+  db.collection('grupos').orderBy('createdAt').onSnapshot(function (snap) {
+    S.groups = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); }); render.keep = true; render();
+  }, fail);
+  db.collection('gastos').onSnapshot(function (snap) {
+    S.expenses = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); }).filter(function (x) { return x.shares; }); render.keep = true; render();
+  }, fail);
+  db.doc('config/categorias').onSnapshot(function (d) { S.cats = d.exists ? (d.data().list || []) : []; render.keep = true; render(); }, fail);
+})();
+</script>
