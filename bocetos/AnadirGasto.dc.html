@@ -12,6 +12,8 @@
 <style>
 body{margin:0}
 a{color:#111111}
+button{font-family:inherit;cursor:pointer}
+select,input{font-family:inherit}
 </style>
 </helmet>
 <div style="width: 390px; height: 844px; box-sizing: border-box; background: #FFD43B; color: #111111; font-family: 'IBM Plex Mono', monospace; display: flex; flex-direction: column">
@@ -19,17 +21,298 @@ a{color:#111111}
     <a href="Inicio.dc.html" aria-label="Volver al inicio" style="width: 44px; height: 44px; box-sizing: border-box; border: 3px solid #111111; background: #FFFFFF; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 20px; font-weight: 700">←</a>
     <span style="font-size: 22px; font-weight: 700; letter-spacing: 1px">AÑADIR_GASTO</span>
   </div>
-  <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 24px">
-    <div style="border: 3px dashed #111111; padding: 24px; text-align: center; display: flex; flex-direction: column; gap: 8px">
-      <span style="font-size: 18px; font-weight: 700">PENDIENTE DE DEFINIR</span>
-      <span style="font-size: 13px">Formulario para añadir un gasto</span>
+
+  <sc-if value="{{isForm}}" hint-placeholder-val="{{true}}">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 14px; padding: 16px; overflow-y: auto">
+      <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700">IMPORTE *
+        <span style="display: flex; align-items: center; background: #FFFFFF; border: 3px solid #111111; box-shadow: 5px 5px 0 #111111">
+          <input type="text" inputmode="decimal" value="{{amount}}" onChange="{{onAmount}}" placeholder="0,00" style="flex-grow: 1; min-width: 0; height: 72px; border: none; padding: 0 12px; font-size: 40px; font-weight: 700; color: #111111; background: transparent; box-sizing: border-box; text-align: right">
+          <span style="font-size: 32px; font-weight: 700; padding-right: 14px">€</span>
+        </span>
+      </label>
+
+      <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700">CONCEPTO *
+        <input type="text" value="{{concept}}" onChange="{{onConcept}}" placeholder="Ej.: Compra Mercadona" style="height: 52px; border: 2px solid #111111; padding: 0 12px; font-size: 17px; font-weight: 400; color: #111111; background: #FFFFFF; box-sizing: border-box; width: 100%">
+      </label>
+
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 12px; font-weight: 700">CATEGORÍA * · {{catHint}}</span>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <sc-for list="{{cats}}" as="c" hint-placeholder-count="0">
+            <button onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="{{c.style}}">{{c.name}}</button>
+          </sc-for>
+        </div>
+        <div style="display: flex; border: 2px solid #111111; background: #FFFFFF">
+          <label style="flex-grow: 1; display: flex">
+            <span style="position: absolute; left: -9999px">Nueva categoría</span>
+            <input type="text" value="{{newCat}}" onChange="{{onNewCat}}" placeholder="Nueva categoría" style="width: 100%; height: 44px; border: none; padding: 0 12px; font-size: 15px; color: #111111; box-sizing: border-box">
+          </label>
+          <button onClick="{{addCat}}" style="height: 44px; padding: 0 14px; border: none; border-left: 2px solid #111111; background: #111111; color: #FFFFFF; font-weight: 700">+ AÑADIR</button>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; min-width: 0">GRUPO *
+          <select onChange="{{onGroup}}" style="height: 52px; border: 2px solid #111111; padding: 0 8px; font-size: 14px; color: #111111; background: #FFFFFF; width: 100%">
+            <option value="" selected="{{noGroup}}">Elige…</option>
+            <sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
+              <option value="{{g.id}}" selected="{{g.selected}}">{{g.name}}</option>
+            </sc-for>
+          </select>
+        </label>
+        <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; min-width: 0">SUBGRUPO *
+          <select onChange="{{onSub}}" disabled="{{subDisabled}}" style="height: 52px; border: 2px solid #111111; padding: 0 8px; font-size: 14px; color: #111111; background: #FFFFFF; width: 100%">
+            <option value="" selected="{{noSub}}">Elige…</option>
+            <sc-for list="{{subs}}" as="s" hint-placeholder-count="2">
+              <option value="{{s.id}}" selected="{{s.selected}}">{{s.name}}</option>
+            </sc-for>
+          </select>
+        </label>
+      </div>
+
+      <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700">FECHA
+        <input type="date" value="{{date}}" onChange="{{onDate}}" style="height: 52px; border: 2px solid #111111; padding: 0 12px; font-size: 16px; color: #111111; background: #FFFFFF; box-sizing: border-box; width: 100%">
+      </label>
+      <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700">PAGÓ *
+        <select onChange="{{onPayer}}" disabled="{{noSubChosen}}" style="height: 52px; border: 2px solid #111111; padding: 0 8px; font-size: 15px; color: #111111; background: #FFFFFF; width: 100%">
+          <option value="" selected="{{noPayer}}">Elige…</option>
+          <sc-for list="{{payers}}" as="m" hint-placeholder-count="2">
+            <option value="{{m.id}}" selected="{{m.selected}}">{{m.name}}</option>
+          </sc-for>
+        </select>
+      </label>
+
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 12px; font-weight: 700">REPARTO</span>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 3px solid #111111">
+          <sc-for list="{{modes}}" as="m" hint-placeholder-count="3">
+            <button onClick="{{m.pick}}" aria-pressed="{{m.pressed}}" style="{{m.style}}">{{m.name}}</button>
+          </sc-for>
+        </div>
+        <div style="background: #FFFFFF; border: 2px solid #111111; display: flex; flex-direction: column">
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="2">
+            <div style="display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 10px; border-bottom: 2px dashed #111111; font-size: 14px">
+              <sc-if value="{{r.isEqual}}" hint-placeholder-val="{{true}}">
+                <label style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 10px; cursor: pointer">
+                  <input type="checkbox" checked="{{r.on}}" onChange="{{r.toggle}}" style="width: 22px; height: 22px; accent-color: #111111">
+                  {{r.name}}
+                </label>
+              </sc-if>
+              <sc-if value="{{r.isInput}}" hint-placeholder-val="{{false}}">
+                <span style="flex-grow: 1; min-width: 0">{{r.name}}</span>
+                <input type="text" inputmode="decimal" value="{{r.val}}" onChange="{{r.onVal}}" aria-label="{{r.label}}" style="width: 76px; height: 40px; border: 2px solid #111111; padding: 0 6px; font-size: 15px; text-align: right; box-sizing: border-box">
+                <span>{{unit}}</span>
+              </sc-if>
+              <b style="min-width: 84px; text-align: right">{{r.amt}}</b>
+            </div>
+          </sc-for>
+          <sc-if value="{{noRows}}" hint-placeholder-val="{{false}}">
+            <span style="padding: 12px; font-size: 13px">{{noRowsText}}</span>
+          </sc-if>
+          <span style="padding: 8px 10px; font-size: 13px; font-weight: 700; color: {{sumColor}}">{{sumText}}</span>
+        </div>
+      </div>
+
+      <sc-if value="{{error}}" hint-placeholder-val="{{false}}">
+        <span role="alert" style="font-size: 13px; font-weight: 700; color: #B3261E; background: #FFFFFF; border: 2px solid #B3261E; padding: 8px">{{error}}</span>
+      </sc-if>
+
+      <button onClick="{{save}}" style="flex-shrink: 0; height: 60px; border: 3px solid #111111; background: #111111; color: #FFFFFF; font-size: 16px; font-weight: 700; box-shadow: 5px 5px 0 #FFFFFF; margin-bottom: 8px">GUARDAR ↵</button>
     </div>
-  </div>
+  </sc-if>
+
+  <sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px; padding: 24px">
+      <div style="background: #111111; color: #FFFFFF; padding: 18px; display: flex; flex-direction: column; gap: 6px; box-shadow: 6px 6px 0 #FFFFFF">
+        <span style="font-size: 12px; color: #FFD43B">✓ GASTO GUARDADO</span>
+        <span style="font-size: 24px; font-weight: 700">{{doneAmount}}</span>
+        <span style="font-size: 13px">{{doneText}}</span>
+      </div>
+      <a href="Inicio.dc.html" style="text-decoration: none; height: 56px; box-sizing: border-box; border: 3px solid #111111; background: #111111; color: #FFFFFF; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center">IR A INICIO</a>
+      <button onClick="{{again}}" style="height: 48px; border: 2px dashed #111111; background: transparent; color: #111111; font-size: 14px; font-weight: 700">+ AÑADIR OTRO</button>
+    </div>
+  </sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+var GKEY = 'gastosdisfrutando.grupos';
+var EKEY = 'gastosdisfrutando.gastos';
+var SEED = [
+  { id: 'g1', name: 'CHARMING LIFE', subs: [{ id: 's1', name: 'Casa' }, { id: 's2', name: 'Súper' }] },
+  { id: 'g2', name: 'CHARMING TRAVELS', subs: [{ id: 's3', name: 'Roma 2026' }] }
+];
+var CKEY = 'gastosdisfrutando.categorias';
+function loadCats() {
+  try { var raw = localStorage.getItem(CKEY); return raw ? JSON.parse(raw) : []; } catch (e) { return []; }
+}
+function storeCats(list) {
+  try { localStorage.setItem(CKEY, JSON.stringify(list)); return true; } catch (e) { return false; }
+}
+function loadExpenses() {
+  try { var raw = localStorage.getItem(EKEY); return raw ? JSON.parse(raw) : []; } catch (e) { return []; }
+}
+function words(text) {
+  return (text || '').toLowerCase().split(/[^a-z0-9áéíóúüñ]+/).filter(function (w) { return w.length >= 3; });
+}
+var MODES = [{ id: 'equal', name: 'IGUAL' }, { id: 'pct', name: '%' }, { id: 'exact', name: 'EXACTO' }];
+var PKEY = 'gastosdisfrutando.personas', AKEY = 'gastosdisfrutando.cuenta';
+function readKey(key, def) {
+  try { var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : def; } catch (e) { return def; }
+}
+function r2(n) { return Math.round(n * 100) / 100; }
+// Sugiere la categoría del gasto anterior más reciente cuyo concepto comparta alguna palabra.
+function predict(text) {
+  var w = words(text);
+  if (!w.length) return '';
+  var cats = loadCats(), past = loadExpenses();
+  for (var i = past.length - 1; i >= 0; i--) {
+    var p = past[i];
+    if (!p.category || cats.indexOf(p.category) === -1) continue;
+    var pw = words(p.concept);
+    if (w.some(function (x) { return pw.indexOf(x) !== -1; })) return p.category;
+  }
+  return '';
+}
+function loadGroups() {
+  try { var raw = localStorage.getItem(GKEY); return raw ? JSON.parse(raw) : SEED; } catch (e) { return SEED; }
+}
+function addExpense(x) {
+  try {
+    var raw = localStorage.getItem(EKEY), list = raw ? JSON.parse(raw) : [];
+    list.push(x); localStorage.setItem(EKEY, JSON.stringify(list)); return true;
+  } catch (e) { return false; }
+}
+function num(v) { var n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? 0 : n; }
+function eur(n) { return n.toFixed(2).replace('.', ',') + ' €'; }
+function today() { var d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
+function uid() { return Math.random().toString(36).slice(2, 9); }
+function chip(on) {
+  return 'height: 44px; padding: 0 12px; border: 2px solid #111111; font-size: 13px; font-weight: 700; ' +
+    (on ? 'background: #111111; color: #FFD43B' : 'background: #FFFFFF; color: #111111');
+}
+function seg(on, last) {
+  return 'height: 48px; border: none; ' + (last ? '' : 'border-right: 3px solid #111111; ') + 'font-size: 15px; font-weight: 700; ' +
+    (on ? 'background: #111111; color: #FFFFFF' : 'background: #FFFFFF; color: #111111');
+}
+function empty() {
+  return { done: false, amount: '', concept: '', cat: '', manualCat: false, group: '', sub: '', date: today(), payer: '', mode: 'equal', off: {}, vals: {}, newCat: '', error: '', doneAmount: '', doneText: '' };
+}
 class Component extends DCLogic {
-  renderVals() { return {}; }
+  constructor(props) {
+    super(props);
+    this.state = empty();
+  }
+  // Devuelve { shares: {personaId: importe}, sum, ok } según el modo de reparto.
+  split(members) {
+    var s = this.state, total = r2(num(s.amount)), shares = {}, sum = 0;
+    if (s.mode === 'equal') {
+      var on = members.filter(function (id) { return !s.off[id]; });
+      var each = on.length ? Math.floor(total * 100 / on.length) / 100 : 0;
+      var rest = r2(total - each * on.length);
+      on.forEach(function (id, i) { shares[id] = r2(each + (i === 0 ? rest : 0)); });
+      return { shares: shares, total: total, ok: on.length > 0, sumText: on.length + ' participantes', sumOk: on.length > 0 };
+    }
+    members.forEach(function (id) {
+      var v = num(s.vals[id] || 0);
+      var amt = s.mode === 'pct' ? r2(total * v / 100) : r2(v);
+      sum += v;
+      if (amt) shares[id] = amt;
+    });
+    if (s.mode === 'pct') {
+      var ok = Math.abs(sum - 100) < 0.01;
+      // Ajusta el redondeo para que las partes sumen el total.
+      var keys = Object.keys(shares), got = keys.reduce(function (a, k) { return a + shares[k]; }, 0);
+      if (ok && keys.length) shares[keys[0]] = r2(shares[keys[0]] + total - got);
+      return { shares: shares, total: total, ok: ok, sumText: 'Suma: ' + r2(sum) + ' % de 100 %', sumOk: ok };
+    }
+    var okE = Math.abs(sum - total) < 0.005;
+    return { shares: shares, total: total, ok: okE, sumText: 'Suma: ' + eur(r2(sum)) + ' de ' + eur(total), sumOk: okE };
+  }
+  renderVals() {
+    var self = this, s = this.state, groups = loadGroups(), people = readKey(PKEY, []), me = (readKey(AKEY, {}) || {}).id;
+    var g = groups.filter(function (x) { return x.id === s.group; })[0];
+    var subs = g ? (g.subs || []) : [];
+    var sub = subs.filter(function (x) { return x.id === s.sub; })[0];
+    var members = sub ? (sub.members || []).filter(function (id) { return people.some(function (p) { return p.id === id; }); }) : [];
+    var nameOf = function (id) { var p = people.filter(function (x) { return x.id === id; })[0]; return p ? p.name + (id === me ? ' (TÚ)' : '') : '?'; };
+    var sp = this.split(members);
+    var set = function (patch) { patch.error = ''; self.setState(patch); };
+    return {
+      isForm: !s.done, isDone: s.done,
+      amount: s.amount, concept: s.concept, date: s.date, error: s.error,
+      doneAmount: s.doneAmount, doneText: s.doneText,
+      catHint: s.cat ? (s.manualCat ? 'ELEGIDA POR TI' : 'SUGERIDA · TOCA PARA CAMBIAR') : 'SE SUGIERE SEGÚN EL CONCEPTO',
+      newCat: s.newCat,
+      cats: loadCats().map(function (c) {
+        var on = s.cat === c;
+        return { name: c, pressed: on ? 'true' : 'false', style: chip(on), pick: function () { set(on ? { cat: '', manualCat: true } : { cat: c, manualCat: true }); } };
+      }),
+      onNewCat: function (e) { set({ newCat: e.target.value }); },
+      addCat: function () {
+        var n = self.state.newCat.trim().toUpperCase();
+        if (!n) return;
+        var list = loadCats();
+        if (list.indexOf(n) === -1) {
+          if (!storeCats(list.concat([n]))) { self.setState({ error: 'No se pudo guardar la categoría.' }); return; }
+        }
+        set({ newCat: '', cat: n, manualCat: true });
+      },
+      groups: groups.map(function (x) { return { id: x.id, name: x.name, selected: x.id === s.group }; }),
+      noGroup: !s.group,
+      subs: subs.map(function (x) { return { id: x.id, name: x.name, selected: x.id === s.sub }; }),
+      noSub: !s.sub, subDisabled: !g,
+      payers: members.map(function (id) { return { id: id, name: nameOf(id), selected: id === s.payer }; }),
+      noPayer: !s.payer, noSubChosen: !sub,
+      modes: MODES.map(function (m, i) {
+        var on = s.mode === m.id;
+        return { name: m.name, pressed: on ? 'true' : 'false', style: seg(on, i === MODES.length - 1), pick: function () { set({ mode: m.id, vals: {} }); } };
+      }),
+      unit: s.mode === 'pct' ? '%' : '€',
+      rows: members.map(function (id) {
+        return {
+          name: nameOf(id), label: 'Parte de ' + nameOf(id), isEqual: s.mode === 'equal', isInput: s.mode !== 'equal',
+          on: !s.off[id], val: s.vals[id] || '', amt: eur(sp.shares[id] || 0),
+          toggle: function () { var o = Object.assign({}, self.state.off); o[id] = !o[id]; set({ off: o }); },
+          onVal: function (e) { var v = Object.assign({}, self.state.vals); v[id] = e.target.value; set({ vals: v }); }
+        };
+      }),
+      noRows: !members.length,
+      noRowsText: !sub ? 'Elige un subgrupo para ver sus miembros.' : 'Este subgrupo no tiene miembros. Añádelos en Grupos.',
+      sumText: sp.sumText, sumColor: sp.sumOk ? '#111111' : '#B3261E',
+      onAmount: function (e) { set({ amount: e.target.value }); },
+      onConcept: function (e) {
+        var v = e.target.value, patch = { concept: v };
+        if (!self.state.manualCat) patch.cat = predict(v);
+        set(patch);
+      },
+      onGroup: function (e) { set({ group: e.target.value, sub: '', payer: '', off: {}, vals: {} }); },
+      onSub: function (e) {
+        var id = e.target.value, x = subs.filter(function (y) { return y.id === id; })[0];
+        var m = x ? (x.members || []) : [];
+        set({ sub: id, payer: m.indexOf(me) !== -1 ? me : '', off: {}, vals: {} });
+      },
+      onDate: function (e) { set({ date: e.target.value }); },
+      onPayer: function (e) { set({ payer: e.target.value }); },
+      save: function () {
+        var st = self.state;
+        var err = '';
+        if (!(sp.total > 0)) err = 'Escribe un importe mayor que 0.';
+        else if (!st.concept.trim()) err = 'Escribe el concepto.';
+        else if (!st.cat) err = 'Elige o añade una categoría.';
+        else if (!st.group) err = 'Elige un grupo.';
+        else if (!subs.length) err = 'Este grupo no tiene subgrupos. Crea uno en Grupos.';
+        else if (!st.sub) err = 'Elige un subgrupo.';
+        else if (!members.length) err = 'El subgrupo no tiene miembros. Añádelos en Grupos.';
+        else if (!st.payer) err = 'Elige quién pagó.';
+        else if (!sp.ok) err = st.mode === 'equal' ? 'Marca al menos una persona en el reparto.' : st.mode === 'pct' ? 'Los porcentajes deben sumar 100 %.' : 'Las partes deben sumar el importe.';
+        if (err) { self.setState({ error: err }); return; }
+        var x = { id: uid(), amount: sp.total, concept: st.concept.trim(), category: st.cat, group: st.group, sub: st.sub, date: st.date, payer: st.payer, shares: sp.shares };
+        if (!addExpense(x)) { self.setState({ error: 'No se pudo guardar.' }); return; }
+        self.setState({ done: true, doneAmount: eur(x.amount), doneText: x.concept + ' · ' + x.category + ' · ' + g.name + ' / ' + sub.name + ' · Pagó ' + nameOf(x.payer) });
+      },
+      again: function () { self.setState(empty()); }
+    };
+  }
 }
 </script>
 </body>

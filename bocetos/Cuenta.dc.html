@@ -21,7 +21,7 @@ button{font-family:inherit;cursor:pointer}
     <span style="font-size: 22px; font-weight: 700; letter-spacing: 1px">CUENTA</span>
   </div>
 
-  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 16px; padding: 16px">
+  <div style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; gap: 16px; padding: 16px; overflow-y: auto">
     <div style="display: flex; align-items: center; gap: 14px; background: #111111; color: #FFFFFF; padding: 14px; box-shadow: 6px 6px 0 #FFFFFF">
       <label style="width: 64px; height: 64px; flex-shrink: 0; background: #FFD43B; color: #111111; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; cursor: pointer; position: relative; overflow: hidden">
         <input type="file" accept="image/*" aria-label="Cambiar foto de perfil" onChange="{{onAvatar}}" style="position: absolute; opacity: 0; width: 1px; height: 1px">
@@ -53,6 +53,17 @@ button{font-family:inherit;cursor:pointer}
         <button onClick="{{startEdit}}" style="height: 56px; border: 3px solid #111111; background: #111111; color: #FFFFFF; font-size: 16px; font-weight: 700; box-shadow: 5px 5px 0 #FFFFFF">EDITAR DATOS</button>
       </div>
     </sc-if>
+
+    <span style="font-size: 13px; font-weight: 700; margin-top: 6px">&gt; PERSONAS REGISTRADAS ({{peopleCount}})</span>
+    <div style="background: #FFFFFF; border: 3px solid #111111; display: flex; flex-direction: column">
+      <sc-for list="{{people}}" as="p" hint-placeholder-count="2">
+        <div style="display: flex; justify-content: space-between; gap: 10px; padding: 10px 12px; border-bottom: 2px dashed #111111; font-size: 14px"><span style="font-weight: 700">{{p.name}}</span><span>{{p.tag}}</span></div>
+      </sc-for>
+      <sc-if value="{{noPeople}}" hint-placeholder-val="{{false}}">
+        <span style="padding: 12px; font-size: 13px">Guarda tu nombre para aparecer aquí.</span>
+      </sc-if>
+    </div>
+    <span style="font-size: 12px">Tu nombre es visible para todos y se puede añadir a cualquier grupo o subgrupo.</span>
 
     <sc-if value="{{editing}}" hint-placeholder-val="{{false}}">
       <div style="display: flex; flex-direction: column; gap: 12px">
@@ -95,6 +106,18 @@ button{font-family:inherit;cursor:pointer}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
 var KEY = 'gastosdisfrutando.cuenta';
+var PKEY = 'gastosdisfrutando.personas';
+function loadPeople() {
+  try { var raw = localStorage.getItem(PKEY); return raw ? JSON.parse(raw) : []; } catch (e) { return []; }
+}
+function uid() { return Math.random().toString(36).slice(2, 9); }
+// Da de alta o actualiza al usuario en la lista de personas registradas.
+function register(id, name) {
+  var list = loadPeople(), found = false;
+  list = list.map(function (p) { if (p.id === id) { found = true; return { id: id, name: name }; } return p; });
+  if (!found) list.push({ id: id, name: name });
+  try { localStorage.setItem(PKEY, JSON.stringify(list)); } catch (e) {}
+}
 var LABELS = { EUR: 'EUR (€)', USD: 'USD ($)', GBP: 'GBP (£)' };
 function load() {
   try { var raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
@@ -107,20 +130,23 @@ class Component extends DCLogic {
     super(props);
     var d = load() || {};
     this.state = {
-      name: d.name || '', email: d.email || '', currency: d.currency || 'EUR', avatar: d.avatar || '',
+      id: d.id || uid(), name: d.name || '', email: d.email || '', currency: d.currency || 'EUR', avatar: d.avatar || '',
       editing: false, saved: false, error: '',
       draftName: '', draftEmail: '', draftCurrency: 'EUR'
     };
   }
   persist(patch) {
     var s = Object.assign({}, this.state, patch);
-    store({ name: s.name, email: s.email, currency: s.currency, avatar: s.avatar });
+    store({ id: s.id, name: s.name, email: s.email, currency: s.currency, avatar: s.avatar });
   }
   renderVals() {
     var s = this.state;
     var self = this;
     var shownName = s.name || '[TU NOMBRE]';
+    var people = loadPeople();
     return {
+      people: people.map(function (p) { return { name: p.name, tag: p.id === s.id ? 'TÚ' : '' }; }),
+      peopleCount: people.length, noPeople: !people.length,
       shownName: shownName,
       shownEmail: s.email || '[tu@email.com]',
       initial: s.name ? s.name.trim().charAt(0).toUpperCase() : '?',
@@ -142,6 +168,7 @@ class Component extends DCLogic {
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { self.setState({ error: 'El email no es válido.' }); return; }
         var patch = { name: name, email: email, currency: self.state.draftCurrency, editing: false, saved: true, error: '' };
         self.persist(patch);
+        register(self.state.id, name);
         self.setState(patch);
       },
       onAvatar: function (e) {

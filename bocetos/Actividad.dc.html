@@ -20,7 +20,10 @@ a{color:#111111}
     <span style="font-size: 22px; font-weight: 700; letter-spacing: 1px">ACTIVIDAD</span>
   </div>
 
-  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 10px; padding: 16px; overflow: hidden">
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 10px; padding: 16px; overflow-y: auto; min-height: 0">
+    <sc-if value="{{empty}}" hint-placeholder-val="{{false}}">
+      <div style="border: 3px dashed #111111; padding: 24px; text-align: center; font-size: 14px; font-weight: 700">SIN MOVIMIENTOS TODAVÍA</div>
+    </sc-if>
     <sc-for list="{{days}}" as="d" hint-placeholder-count="2">
       <span style="font-size: 13px; font-weight: 700; margin-top: 4px">&gt; {{d.label}}</span>
       <div style="background: #FFFFFF; border: 3px solid #111111; display: flex; flex-direction: column">
@@ -58,20 +61,46 @@ a{color:#111111}
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+var EKEY = 'gastosdisfrutando.gastos', GKEY = 'gastosdisfrutando.grupos', PKEY = 'gastosdisfrutando.personas', AKEY = 'gastosdisfrutando.cuenta';
+var SEED = [
+  { id: 'g1', name: 'CHARMING LIFE', subs: [{ id: 's1', name: 'Casa' }, { id: 's2', name: 'Súper' }] },
+  { id: 'g2', name: 'CHARMING TRAVELS', subs: [{ id: 's3', name: 'Roma 2026' }] }
+];
+function read(key, def) {
+  try { var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : def; } catch (e) { return def; }
+}
+function eur(n) { return Math.abs(n).toFixed(2).replace('.', ',') + ' €'; }
+function iso(d) { return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
+function dayLabel(date) {
+  var now = new Date(), y = new Date(now.getTime() - 86400000);
+  if (date === iso(now)) return 'HOY';
+  if (date === iso(y)) return 'AYER';
+  var p = date.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
 class Component extends DCLogic {
   renderVals() {
-    const G = '#1C6B3A', R = '#B3261E';
-    return { days: [
-      { label: 'HOY', items: [
-        { title: 'Cena japonés', sub: 'Pagaste tú · Charming Life', amount: '+29,40 €', color: G },
-        { title: 'Gasolina', sub: 'Pagó Ana S. · Charming Travels', amount: '−22,50 €', color: R }
-      ] },
-      { label: 'AYER', items: [
-        { title: 'Mercadona', sub: 'Pagó Ana S. · Charming Life', amount: '−31,60 €', color: R },
-        { title: 'Luz octubre', sub: 'Pagaste tú · Charming Life', amount: '+44,50 €', color: G },
-        { title: 'Liquidación', sub: 'Ana S. te pagó · Charming Life', amount: '100,00 €', color: '#111111' }
-      ] }
-    ] };
+    var G = '#1C6B3A', R = '#B3261E';
+    var groups = read(GKEY, SEED), people = read(PKEY, []), me = (read(AKEY, {}) || {}).id;
+    var list = read(EKEY, []).filter(function (x) { return x.shares; });
+    list.sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+    var nameOf = function (id) { var p = people.filter(function (x) { return x.id === id; })[0]; return p ? p.name : '?'; };
+    var days = [];
+    list.forEach(function (x) {
+      var label = dayLabel(x.date), day = days[days.length - 1];
+      if (!day || day.label !== label) { day = { label: label, items: [] }; days.push(day); }
+      var g = groups.filter(function (y) { return y.id === x.group; })[0] || { name: '—', subs: [] };
+      var sub = (g.subs || []).filter(function (y) { return y.id === x.sub; })[0];
+      var myShare = x.shares[me] || 0, item;
+      // Desde tu punto de vista: lo que te deben (+), lo que debes (−) o neutro si no participas.
+      if (x.payer === me) item = { amount: '+' + eur(x.amount - myShare), color: G };
+      else if (myShare) item = { amount: '−' + eur(myShare), color: R };
+      else item = { amount: eur(x.amount), color: '#111111' };
+      item.title = x.concept;
+      item.sub = (x.payer === me ? 'Pagaste tú' : 'Pagó ' + nameOf(x.payer)) + ' · ' + x.category + ' · ' + g.name + (sub ? ' / ' + sub.name : '');
+      day.items.push(item);
+    });
+    return { days: days, empty: !days.length };
   }
 }
 </script>

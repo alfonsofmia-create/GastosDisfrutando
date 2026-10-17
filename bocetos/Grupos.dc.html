@@ -34,6 +34,10 @@ button{font-family:inherit;cursor:pointer}
 
   <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 12px; padding: 16px; overflow-y: auto">
 
+    <sc-if value="{{error}}" hint-placeholder-val="{{false}}">
+      <span role="alert" style="font-size: 13px; font-weight: 700; color: #B3261E; background: #FFFFFF; border: 2px solid #B3261E; padding: 8px">{{error}}</span>
+    </sc-if>
+
     <!-- LISTA DE GRUPOS -->
     <sc-if value="{{isList}}" hint-placeholder-val="{{true}}">
       <span style="font-size: 13px; font-weight: 700">&gt; TUS GRUPOS ({{groupCount}})</span>
@@ -44,6 +48,15 @@ button{font-family:inherit;cursor:pointer}
               <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700">NOMBRE DEL GRUPO
                 <input type="text" value="{{draft}}" onChange="{{onDraft}}" style="height: 48px; border: 2px solid #111111; padding: 0 12px; font: inherit; font-size: 16px; font-weight: 400; color: #111111; box-sizing: border-box; width: 100%">
               </label>
+              <span style="font-size: 12px; font-weight: 700">MIEMBROS ({{memberCount}})</span>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px">
+                <sc-for list="{{memberChips}}" as="p" hint-placeholder-count="2">
+                  <button onClick="{{p.toggle}}" aria-pressed="{{p.pressed}}" style="{{p.style}}">{{p.name}}</button>
+                </sc-for>
+              </div>
+              <sc-if value="{{noChips}}" hint-placeholder-val="{{false}}">
+                <span style="font-size: 12px">{{noChipsText}}</span>
+              </sc-if>
               <span style="font-size: 12px; font-weight: 700">SUBGRUPOS ({{g.editCount}})</span>
               <div style="display: flex; flex-direction: column; border: 2px solid #111111">
                 <sc-for list="{{g.subRows}}" as="r" hint-placeholder-count="2">
@@ -79,6 +92,7 @@ button{font-family:inherit;cursor:pointer}
             <div style="display: flex; align-items: stretch">
               <button onClick="{{g.open}}" style="flex-grow: 1; min-width: 0; border: none; background: transparent; color: #111111; text-align: left; padding: 12px; display: flex; flex-direction: column; gap: 2px">
                 <span style="font-size: 16px; font-weight: 700">{{g.name}}</span>
+                <span style="font-size: 12px">{{g.membersText}}</span>
                 <span style="font-size: 12px">{{g.subCount}} subgrupos ›</span>
               </button>
               <button onClick="{{g.edit}}" aria-label="{{g.editLabel}}" style="width: 52px; border: none; border-left: 2px dashed #111111; background: transparent; color: #111111; display: flex; align-items: center; justify-content: center">
@@ -107,6 +121,15 @@ button{font-family:inherit;cursor:pointer}
               <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700">NOMBRE DEL SUBGRUPO
                 <input type="text" value="{{draft}}" onChange="{{onDraft}}" style="height: 48px; border: 2px solid #111111; padding: 0 12px; font: inherit; font-size: 16px; font-weight: 400; color: #111111; box-sizing: border-box; width: 100%">
               </label>
+              <span style="font-size: 12px; font-weight: 700">MIEMBROS ({{memberCount}})</span>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px">
+                <sc-for list="{{memberChips}}" as="p" hint-placeholder-count="2">
+                  <button onClick="{{p.toggle}}" aria-pressed="{{p.pressed}}" style="{{p.style}}">{{p.name}}</button>
+                </sc-for>
+              </div>
+              <sc-if value="{{noChips}}" hint-placeholder-val="{{false}}">
+                <span style="font-size: 12px">{{noChipsText}}</span>
+              </sc-if>
               <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
                 <button onClick="{{cancelEdit}}" style="height: 44px; border: 2px solid #111111; background: #FFFFFF; color: #111111; font-weight: 700">CANCELAR</button>
                 <button onClick="{{s.saveEdit}}" style="height: 44px; border: 2px solid #111111; background: #111111; color: #FFFFFF; font-weight: 700">GUARDAR</button>
@@ -124,7 +147,10 @@ button{font-family:inherit;cursor:pointer}
           </sc-if>
           <sc-if value="{{s.isNormal}}" hint-placeholder-val="{{true}}">
             <div style="display: flex; align-items: stretch">
-              <button onClick="{{s.open}}" style="flex-grow: 1; min-width: 0; border: none; background: transparent; color: #111111; text-align: left; padding: 14px 12px; font-size: 16px; font-weight: 700">{{s.name}} ›</button>
+              <button onClick="{{s.open}}" style="flex-grow: 1; min-width: 0; border: none; background: transparent; color: #111111; text-align: left; padding: 12px; display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 16px; font-weight: 700">{{s.name}} ›</span>
+                <span style="font-size: 12px">{{s.membersText}}</span>
+              </button>
               <button onClick="{{s.edit}}" aria-label="{{s.editLabel}}" style="width: 52px; border: none; border-left: 2px dashed #111111; background: transparent; color: #111111; display: flex; align-items: center; justify-content: center">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>
               </button>
@@ -149,6 +175,8 @@ button{font-family:inherit;cursor:pointer}
     <!-- DETALLE DE SUBGRUPO -->
     <sc-if value="{{isSub}}" hint-placeholder-val="{{false}}">
       <span style="font-size: 12px">{{parentName}} › {{subName}}</span>
+      <span style="font-size: 13px; font-weight: 700; margin-top: 6px">&gt; MIEMBROS</span>
+      <span style="font-size: 14px; background: #FFFFFF; border: 3px solid #111111; padding: 12px">{{subMembersText}}</span>
       <span style="font-size: 13px; font-weight: 700; margin-top: 6px">&gt; TIPOS DE CAMBIO</span>
       <div style="background: #FFFFFF; border: 3px solid #111111; display: flex; flex-direction: column">
         <div style="display: flex; justify-content: space-between; padding: 12px; border-bottom: 2px dashed #111111; font-size: 14px"><span>MONEDA BASE</span><span style="font-weight: 700">EUR (€)</span></div>
@@ -192,15 +220,34 @@ function load() {
 function store(groups) {
   try { localStorage.setItem(KEY, JSON.stringify(groups)); } catch (e) {}
 }
+var PKEY = 'gastosdisfrutando.personas', EKEY = 'gastosdisfrutando.gastos';
+function read(key, def) {
+  try { var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : def; } catch (e) { return def; }
+}
+function chip(on) {
+  return 'min-height: 44px; padding: 0 12px; border: 2px solid #111111; font-size: 13px; font-weight: 700; ' +
+    (on ? 'background: #111111; color: #FFD43B' : 'background: #FFFFFF; color: #111111');
+}
+function namesOf(ids, people) {
+  var n = (ids || []).map(function (id) { var p = people.filter(function (x) { return x.id === id; })[0]; return p ? p.name : null; }).filter(Boolean);
+  return n.length ? n.join(', ') : 'Sin miembros';
+}
+// Personas quitadas que ya aparecen en gastos (como pagador o en el reparto) de ese grupo o subgrupo.
+function usedIn(removed, match) {
+  if (!removed.length) return [];
+  return removed.filter(function (id) {
+    return read(EKEY, []).some(function (x) { return x.shares && match(x) && (x.payer === id || x.shares[id] !== undefined); });
+  });
+}
 function uid() { return Math.random().toString(36).slice(2, 9); }
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { groups: load() || SEED, view: 'list', groupId: null, subId: null, editId: null, confirmId: null, draft: '', newSub: '', draftSubs: [] };
+    this.state = { groups: load() || SEED, view: 'list', groupId: null, subId: null, editId: null, confirmId: null, draft: '', newSub: '', draftSubs: [], draftMembers: [], error: '' };
   }
   update(groups, extra) {
     store(groups);
-    this.setState(Object.assign({ groups: groups, editId: null, confirmId: null, draft: '' }, extra || {}));
+    this.setState(Object.assign({ groups: groups, editId: null, confirmId: null, draft: '', error: '' }, extra || {}));
   }
   rowState(id) {
     var s = this.state;
@@ -211,22 +258,29 @@ class Component extends DCLogic {
     var group = s.groups.filter(function (g) { return g.id === s.groupId; })[0];
     var sub = group && group.subs.filter(function (x) { return x.id === s.subId; })[0];
     var view = s.view === 'sub' && !sub ? (group ? 'group' : 'list') : (s.view === 'group' && !group ? 'list' : s.view);
+    var people = read(PKEY, []);
     var title = view === 'list' ? 'GRUPOS' : view === 'group' ? group.name : sub.name.toUpperCase();
 
     var groups = s.groups.map(function (g) {
       return Object.assign({
-        name: g.name, subCount: g.subs.length,
+        name: g.name, subCount: g.subs.length, membersText: namesOf(g.members, people),
         editLabel: 'Editar ' + g.name, deleteLabel: 'Borrar ' + g.name,
         open: function () { self.setState({ view: 'group', groupId: g.id, editId: null, confirmId: null, newSub: '' }); },
-        edit: function () { self.setState({ editId: g.id, confirmId: null, draft: g.name, newSub: '', draftSubs: g.subs.slice() }); },
+        edit: function () { self.setState({ editId: g.id, confirmId: null, draft: g.name, newSub: '', draftSubs: g.subs.slice(), draftMembers: (g.members || []).slice(), error: '' }); },
         askDelete: function () { self.setState({ confirmId: g.id, editId: null }); },
         saveEdit: function () {
           var name = self.state.draft.trim().toUpperCase();
           if (!name) return;
-          var subs = self.state.draftSubs.slice();
+          var members = self.state.draftMembers.slice();
+          var removed = (g.members || []).filter(function (id) { return members.indexOf(id) === -1; });
+          var used = usedIn(removed, function (x) { return x.group === g.id; });
+          if (used.length) { self.setState({ error: 'No se puede quitar a ' + namesOf(used, people) + ': tiene gastos en este grupo.' }); return; }
+          var subs = self.state.draftSubs.map(function (x) {
+            return Object.assign({}, x, { members: (x.members || members).filter(function (id) { return members.indexOf(id) !== -1; }) });
+          });
           var pending = self.state.newSub.trim();
-          if (pending) subs.push({ id: uid(), name: pending });
-          self.update(self.state.groups.map(function (x) { return x.id === g.id ? Object.assign({}, x, { name: name, subs: subs }) : x; }), { newSub: '', draftSubs: [] });
+          if (pending) subs.push({ id: uid(), name: pending, members: members.slice() });
+          self.update(self.state.groups.map(function (x) { return x.id === g.id ? Object.assign({}, x, { name: name, members: members, subs: subs }) : x; }), { newSub: '', draftSubs: [], draftMembers: [] });
         },
         doDelete: function () { self.update(self.state.groups.filter(function (x) { return x.id !== g.id; })); },
         editCount: (s.draftSubs || []).length,
@@ -236,7 +290,7 @@ class Component extends DCLogic {
         addSub: function () {
           var name = self.state.newSub.trim();
           if (!name) return;
-          self.setState({ draftSubs: self.state.draftSubs.concat([{ id: uid(), name: name }]), newSub: '' });
+          self.setState({ draftSubs: self.state.draftSubs.concat([{ id: uid(), name: name, members: self.state.draftMembers.slice() }]), newSub: '' });
         }
       }, self.rowState(g.id));
     });
@@ -246,20 +300,37 @@ class Component extends DCLogic {
     }
     var subs = group ? group.subs.map(function (x) {
       return Object.assign({
-        name: x.name, editLabel: 'Editar ' + x.name, deleteLabel: 'Borrar ' + x.name,
+        name: x.name, membersText: namesOf(x.members, people), editLabel: 'Editar ' + x.name, deleteLabel: 'Borrar ' + x.name,
         open: function () { self.setState({ view: 'sub', subId: x.id, editId: null, confirmId: null }); },
-        edit: function () { self.setState({ editId: x.id, confirmId: null, draft: x.name }); },
+        edit: function () { self.setState({ editId: x.id, confirmId: null, draft: x.name, draftMembers: (x.members || []).slice(), error: '' }); },
         askDelete: function () { self.setState({ confirmId: x.id, editId: null }); },
         saveEdit: function () {
           var name = self.state.draft.trim();
           if (!name) return;
-          self.update(patchSubs(function (l) { return l.map(function (y) { return y.id === x.id ? { id: y.id, name: name } : y; }); }));
+          var members = self.state.draftMembers.slice();
+          var removed = (x.members || []).filter(function (id) { return members.indexOf(id) === -1; });
+          var used = usedIn(removed, function (e) { return e.sub === x.id; });
+          if (used.length) { self.setState({ error: 'No se puede quitar a ' + namesOf(used, people) + ': tiene gastos en este subgrupo.' }); return; }
+          self.update(patchSubs(function (l) { return l.map(function (y) { return y.id === x.id ? { id: y.id, name: name, members: members } : y; }); }), { draftMembers: [] });
         },
         doDelete: function () { self.update(patchSubs(function (l) { return l.filter(function (y) { return y.id !== x.id; }); })); }
       }, self.rowState(x.id));
     }) : [];
 
+    // Candidatos: para un grupo, todas las personas registradas; para un subgrupo, los miembros del grupo.
+    var editingSub = view === 'group' && s.editId && group && group.subs.some(function (x) { return x.id === s.editId; });
+    var pool = editingSub ? people.filter(function (p) { return (group.members || []).indexOf(p.id) !== -1; }) : people;
     return {
+      memberChips: pool.map(function (p) {
+        var on = s.draftMembers.indexOf(p.id) !== -1;
+        return { name: p.name, pressed: on ? 'true' : 'false', style: chip(on), toggle: function () {
+          var m = self.state.draftMembers;
+          self.setState({ draftMembers: on ? m.filter(function (y) { return y !== p.id; }) : m.concat([p.id]), error: '' });
+        } };
+      }),
+      memberCount: s.draftMembers.length, noChips: !pool.length,
+      noChipsText: editingSub ? 'El grupo no tiene miembros todavía.' : 'No hay personas registradas. Cada persona se registra en Cuenta.',
+      subMembersText: sub ? namesOf(sub.members, people) : '', error: s.error,
       title: title,
       isList: view === 'list', notList: view !== 'list', isGroup: view === 'group', isSub: view === 'sub',
       groups: groups, groupCount: groups.length, noGroups: groups.length === 0,
@@ -268,11 +339,11 @@ class Component extends DCLogic {
       draft: s.draft, newSub: s.newSub, yes: true,
       onDraft: function (e) { self.setState({ draft: e.target.value }); },
       onNewSub: function (e) { self.setState({ newSub: e.target.value }); },
-      cancelEdit: function () { self.setState({ editId: null, confirmId: null, draft: '' }); },
+      cancelEdit: function () { self.setState({ editId: null, confirmId: null, draft: '', error: '' }); },
       addSub: function () {
         var name = self.state.newSub.trim();
         if (!name || !group) return;
-        self.update(patchSubs(function (l) { return l.concat([{ id: uid(), name: name }]); }), { newSub: '' });
+        self.update(patchSubs(function (l) { return l.concat([{ id: uid(), name: name, members: (group.members || []).slice() }]); }), { newSub: '' });
       },
       back: function () {
         if (view === 'sub') self.setState({ view: 'group', subId: null });

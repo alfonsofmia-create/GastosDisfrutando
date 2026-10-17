@@ -41,6 +41,16 @@ button{font-family:inherit;cursor:pointer}
         </label>
       </div>
 
+      <span style="font-size: 13px; font-weight: 700; margin-top: 6px">&gt; MIEMBROS ({{memberCount}}) *</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px">
+        <sc-for list="{{people}}" as="p" hint-placeholder-count="2">
+          <button onClick="{{p.toggle}}" aria-pressed="{{p.pressed}}" style="{{p.style}}">{{p.name}}</button>
+        </sc-for>
+      </div>
+      <sc-if value="{{noPeople}}" hint-placeholder-val="{{false}}">
+        <span style="font-size: 13px">No hay personas registradas. Cada persona se registra en Cuenta.</span>
+      </sc-if>
+
       <span style="font-size: 13px; font-weight: 700; margin-top: 6px">&gt; SUBGRUPOS ({{subCount}}) · OPCIONAL</span>
       <div style="display: flex; flex-direction: column; background: #FFFFFF; border: 3px solid #111111">
         <sc-for list="{{subs}}" as="r" hint-placeholder-count="0">
@@ -58,7 +68,7 @@ button{font-family:inherit;cursor:pointer}
         </div>
       </div>
 
-      <span style="font-size: 12px">Moneda: EUR (€) · Miembros: tú y tu pareja</span>
+      <span style="font-size: 12px">Moneda: EUR (€) · Los subgrupos heredan los miembros del grupo</span>
 
       <sc-if value="{{error}}" hint-placeholder-val="{{false}}">
         <span role="alert" style="font-size: 13px; font-weight: 700; color: #B3261E; background: #FFFFFF; border: 2px solid #B3261E; padding: 8px">{{error}}</span>
@@ -98,6 +108,14 @@ function load() {
 function store(groups) {
   try { localStorage.setItem(KEY, JSON.stringify(groups)); return true; } catch (e) { return false; }
 }
+var PKEY = 'gastosdisfrutando.personas';
+function loadPeople() {
+  try { var raw = localStorage.getItem(PKEY); return raw ? JSON.parse(raw) : []; } catch (e) { return []; }
+}
+function chip(on) {
+  return 'min-height: 44px; padding: 0 12px; border: 2px solid #111111; font-size: 13px; font-weight: 700; ' +
+    (on ? 'background: #111111; color: #FFD43B' : 'background: #FFFFFF; color: #111111');
+}
 function uid() { return Math.random().toString(36).slice(2, 9); }
 function resize(file, cb) {
   var reader = new FileReader();
@@ -114,15 +132,23 @@ function resize(file, cb) {
   };
   reader.readAsDataURL(file);
 }
-var EMPTY = { done: false, name: '', photo: '', subs: [], newSub: '', error: '', createdName: '', createdSubs: 0 };
+var EMPTY = { done: false, name: '', photo: '', members: [], subs: [], newSub: '', error: '', createdName: '', createdSubs: 0 };
 class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.state = Object.assign({}, EMPTY);
   }
   renderVals() {
-    var self = this, s = this.state;
+    var self = this, s = this.state, people = loadPeople();
     return {
+      people: people.map(function (p) {
+        var on = s.members.indexOf(p.id) !== -1;
+        return { name: p.name, pressed: on ? 'true' : 'false', style: chip(on), toggle: function () {
+          var m = self.state.members;
+          self.setState({ members: on ? m.filter(function (x) { return x !== p.id; }) : m.concat([p.id]), error: '' });
+        } };
+      }),
+      noPeople: !people.length, memberCount: s.members.length,
       isForm: !s.done, isDone: s.done,
       name: s.name, photo: s.photo, noPhoto: !s.photo, newSub: s.newSub, error: s.error,
       subCount: s.subs.length, createdName: s.createdName, createdSubs: s.createdSubs,
@@ -146,13 +172,15 @@ class Component extends DCLogic {
         if (!name) { self.setState({ error: 'Escribe el nombre del grupo.' }); return; }
         var groups = load() || SEED;
         if (groups.some(function (g) { return g.name === name; })) { self.setState({ error: 'Ya existe un grupo con ese nombre.' }); return; }
+        if (!st.members.length) { self.setState({ error: 'Elige al menos un miembro.' }); return; }
         var subs = st.subs.slice();
         if (st.newSub.trim()) subs.push({ id: uid(), name: st.newSub.trim() });
-        var group = { id: uid(), name: name, photo: st.photo, subs: subs };
+        subs = subs.map(function (x) { return { id: x.id, name: x.name, members: st.members.slice() }; });
+        var group = { id: uid(), name: name, photo: st.photo, members: st.members.slice(), subs: subs };
         if (!store(groups.concat([group]))) { self.setState({ error: 'No se pudo guardar. Prueba con una foto más pequeña.' }); return; }
         self.setState({ done: true, createdName: name, createdSubs: subs.length });
       },
-      again: function () { self.setState(Object.assign({}, EMPTY)); }
+      again: function () { self.setState(Object.assign({}, EMPTY, { members: [], subs: [] })); }
     };
   }
 }

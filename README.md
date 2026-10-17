@@ -8,19 +8,21 @@ Fase de diseño. Estilo elegido: **ticket de caja** (amarillo, monoespaciada, bo
 
 - Lienzo con los bocetos: https://claude.ai/artifact/PePYNCrFDjppLXP556QkFy (privado)
 - Fuentes en [`bocetos/`](bocetos/):
-  - `Inicio.dc.html` — inicio: deuda total, grupos (con foto configurable), crear grupo, «Añadir gasto» y barra inferior (Inicio · Grupos · Actividad · Cuenta). Enlaces navegables.
-  - `NuevoGrupo.dc.html` — crear grupo: foto, nombre (obligatorio, sin duplicados) y subgrupos opcionales. El grupo aparece en Inicio y en Grupos.
-  - `AnadirGasto.dc.html` — añadir gasto (pendiente de definir).
-  - `Grupos.dc.html` — lista de grupos (editar nombre y subgrupos, borrar con confirmación, añadir); al abrir un grupo, sus subgrupos (1 nivel: crear, editar, borrar); en cada subgrupo, «Tipos de cambio» (solo dibujado, pendiente de definir).
-  - `Actividad.dc.html` — últimos movimientos agrupados por día.
-  - `Cuenta.dc.html` — datos básicos del usuario: editar nombre y email (con validación) y foto de perfil. De momento se guarda solo en el navegador.
+  - `Inicio.dc.html` — inicio: saldo general calculado con los gastos (y desglose por persona), grupos con su saldo (foto configurable), crear grupo, «Añadir gasto» y barra inferior (Inicio · Grupos · Actividad · Cuenta).
+  - `NuevoGrupo.dc.html` — crear grupo: foto, nombre (obligatorio, sin duplicados), miembros (obligatorio, de las personas registradas) y subgrupos opcionales, que heredan los miembros.
+  - `AnadirGasto.dc.html` — añadir gasto: importe, concepto, categoría (obligatoria, predictiva e incremental), grupo y subgrupo (obligatorios), fecha, quién pagó (miembros del subgrupo) y reparto (igual con exclusiones, % o importes exactos).
+  - `Grupos.dc.html` — lista de grupos (editar nombre, miembros y subgrupos, borrar con confirmación, añadir); al abrir un grupo, sus subgrupos (1 nivel: crear, editar nombre y miembros, borrar); en cada subgrupo, sus miembros y «Tipos de cambio» (solo dibujado).
+  - `Actividad.dc.html` — gastos reales agrupados por día, con importe desde el punto de vista del usuario.
+  - `Cuenta.dc.html` — datos del usuario (nombre, email, foto). Al guardar el nombre, el usuario queda registrado en «Personas registradas», visibles para todos.
   - `canvas.json` — disposición de los bocetos en el lienzo.
 
 ## Decisiones tomadas
 
 - **Diseño**: opción D, «ticket de caja». Fondo `#FFD43B`, texto `#111111`, fuente IBM Plex Mono, bordes negros de 3px, sombras planas. Verde `#1C6B3A` con «+» = te deben; rojo `#B3261E` con «−» = debes.
 - **Uso**: 90 % desde móvil en vertical (pantallas de 390×844).
-- **Personas**: siempre las mismas 2 personas en todos los grupos (no se piden miembros).
+- **Personas**: cada usuario se registra en Cuenta; su nombre es visible para todos y puede añadirse a cualquier grupo. Cada grupo tiene sus miembros (el usuario no tiene que estar en todos); los subgrupos los heredan al crearse y se editan entre los miembros del grupo. Añadir a alguien a un grupo no lo añade a subgrupos existentes; quitarlo sí lo quita de ellos. No se puede quitar a quien ya tiene gastos.
+- **Gastos**: pagador elegido entre los miembros del subgrupo; reparto igual (con exclusiones), por porcentajes (suman 100 %) o importes exactos (suman el total). Saldos por persona.
+- **Categorías**: sin categorías iniciales; el usuario las crea y se guardan para el futuro. Se sugieren según gastos anteriores con palabras en común en el concepto, y se pueden cambiar.
 - **Moneda**: solo euros en toda la aplicación.
 - **Grupos**: con foto opcional y un solo nivel de subgrupos.
 - **Menú inferior**: Inicio · Grupos · Actividad · Cuenta (se quitó «Amigos»).
@@ -29,11 +31,10 @@ Fase de diseño. Estilo elegido: **ticket de caja** (amarillo, monoespaciada, bo
 
 ## Pendiente
 
-- **Añadir gasto**: por definir (siguiente paso propuesto).
 - **Tipos de cambio** en subgrupos: solo dibujado. Con la decisión de «solo euros», confirmar si se elimina.
-- **Actividad**: hoy muestra datos de ejemplo; se conectará a los gastos reales.
-- **Datos compartidos**: ahora todo se guarda en `localStorage` del navegador (claves `gastosdisfrutando.grupos` y `gastosdisfrutando.cuenta`). Pasar a datos compartidos entre las dos personas.
-- Saldos de los grupos de ejemplo (Charming Life / Charming Travels) son inventados.
+- **Liquidaciones**: registrar pagos entre personas.
+- **Grupos de ejemplo** (Charming Life / Charming Travels): sin miembros; se asignarán manualmente.
+- **Datos compartidos**: ahora todo se guarda en `localStorage` del navegador (claves `gastosdisfrutando.grupos`, `.cuenta`, `.personas`, `.gastos` y `.categorias`). Pasar a datos compartidos entre las dos personas.
 
 ## Funcionalidad prevista
 
@@ -46,4 +47,5 @@ Fase de diseño. Estilo elegido: **ticket de caja** (amarillo, monoespaciada, bo
 
 - La otra persona necesita acceso de edición al artefacto (y probablemente cuenta en claude.ai).
 - Sin notificaciones push ni modo sin conexión fiable.
-- Moneda única: euros. Grupos siempre entre las mismas 2 personas.
+- Moneda única: euros.
+- Mientras los datos estén en el navegador, solo existe la persona registrada en ese navegador.

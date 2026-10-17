@@ -26,7 +26,10 @@ a{color:#111111}
   <div style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; padding: 16px; overflow-y: auto">
     <div style="background: #111111; color: #FFFFFF; padding: 14px; display: flex; flex-direction: column; gap: 4px; box-shadow: 6px 6px 0 #FFFFFF">
       <span style="font-size: 12px; color: #FFD43B">EN GENERAL</span>
-      <span style="font-size: 26px; font-weight: 700">DEBES 157,48 €</span>
+      <span style="font-size: 26px; font-weight: 700; color: {{totalColor}}">{{total}}</span>
+      <sc-for list="{{totalLines}}" as="l" hint-placeholder-count="0">
+        <span style="font-size: 13px">{{l}}</span>
+      </sc-for>
     </div>
 
     <span style="font-size: 13px; font-weight: 700; margin-top: 6px">&gt; GRUPOS</span>
@@ -83,11 +86,36 @@ var SEED = [
   { id: 'g1', name: 'CHARMING LIFE', subs: [{ id: 's1', name: 'Casa' }, { id: 's2', name: 'Súper' }] },
   { id: 'g2', name: 'CHARMING TRAVELS', subs: [{ id: 's3', name: 'Roma 2026' }] }
 ];
-// Saldos de ejemplo hasta que existan gastos reales.
-var DEMO = {
-  g1: { balance: '+424,75 € TE DEBEN', color: '#1C6B3A', detail: 'Ana S. te debe 424,75' },
-  g2: { balance: '−582,23 € DEBES', color: '#B3261E', detail: 'Debes a Ana S. 582,23' }
-};
+var EKEY = 'gastosdisfrutando.gastos';
+function loadExpenses() {
+  try { var raw = localStorage.getItem(EKEY); return raw ? JSON.parse(raw) : []; } catch (e) { return []; }
+}
+var PKEY = 'gastosdisfrutando.personas', AKEY = 'gastosdisfrutando.cuenta';
+function readKey(key, def) {
+  try { var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : def; } catch (e) { return def; }
+}
+// Saldo con cada persona: positivo = te debe; negativo = le debes.
+function balances(expenses, me) {
+  var net = {};
+  expenses.forEach(function (x) {
+    if (!x.shares) return;
+    if (x.payer === me) {
+      Object.keys(x.shares).forEach(function (id) { if (id !== me) net[id] = (net[id] || 0) + x.shares[id]; });
+    } else if (x.shares[me]) {
+      net[x.payer] = (net[x.payer] || 0) - x.shares[me];
+    }
+  });
+  Object.keys(net).forEach(function (id) { net[id] = Math.round(net[id] * 100) / 100; if (!net[id]) delete net[id]; });
+  return net;
+}
+function lines(net, people) {
+  return Object.keys(net).map(function (id) {
+    var p = people.filter(function (x) { return x.id === id; })[0], n = p ? p.name : '?';
+    return net[id] > 0 ? n + ' te debe ' + eur(net[id]) : 'Debes a ' + n + ' ' + eur(net[id]);
+  });
+}
+function sum(net) { var t = 0; Object.keys(net).forEach(function (id) { t += net[id]; }); return Math.round(t * 100) / 100; }
+function eur(n) { return Math.abs(n).toFixed(2).replace('.', ',') + ' €'; }
 function load() {
   try { var raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
 }
@@ -125,10 +153,20 @@ class Component extends DCLogic {
     });
   }
   renderVals() {
-    var self = this;
+    var self = this, expenses = loadExpenses().filter(function (x) { return x.shares; });
+    var people = readKey(PKEY, []), me = (readKey(AKEY, {}) || {}).id;
+    var allNet = me ? balances(expenses, me) : {}, total = sum(allNet);
     return {
+      total: !me ? 'REGÍSTRATE EN CUENTA' : total > 0 ? 'TE DEBEN ' + eur(total) : total < 0 ? 'DEBES ' + eur(total) : 'TODO SALDADO',
+      totalLines: lines(allNet, people),
+      totalColor: total > 0 ? '#7FD69B' : total < 0 ? '#FF8A80' : '#FFFFFF',
       groups: this.state.groups.map(function (g) {
-        var d = DEMO[g.id] || { balance: 'SIN MOVIMIENTOS', color: '#111111', detail: g.subs.length + ' subgrupos' };
+        var mine = expenses.filter(function (x) { return x.group === g.id; });
+        var net = me ? balances(mine, me) : {}, b = sum(net), det = lines(net, people).join(' · ');
+        var d = !mine.length ? { balance: 'SIN MOVIMIENTOS', color: '#111111', detail: (g.subs || []).length + ' subgrupos' }
+          : b > 0 ? { balance: '+' + eur(b) + ' TE DEBEN', color: '#1C6B3A', detail: det }
+          : b < 0 ? { balance: '−' + eur(b) + ' DEBES', color: '#B3261E', detail: det }
+          : { balance: 'SALDADO', color: '#111111', detail: det || mine.length + ' gastos' };
         return {
           id: g.id, name: g.name, balance: d.balance, color: d.color, detail: d.detail,
           photo: g.photo || '', noPhoto: !g.photo,
