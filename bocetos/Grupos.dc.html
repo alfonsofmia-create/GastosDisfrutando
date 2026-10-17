@@ -44,6 +44,22 @@ button{font-family:inherit;cursor:pointer}
               <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700">NOMBRE DEL GRUPO
                 <input type="text" value="{{draft}}" onChange="{{onDraft}}" style="height: 48px; border: 2px solid #111111; padding: 0 12px; font: inherit; font-size: 16px; font-weight: 400; color: #111111; box-sizing: border-box; width: 100%">
               </label>
+              <span style="font-size: 12px; font-weight: 700">SUBGRUPOS ({{g.editCount}})</span>
+              <div style="display: flex; flex-direction: column; border: 2px solid #111111">
+                <sc-for list="{{g.subRows}}" as="r" hint-placeholder-count="2">
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 0 0 12px; border-bottom: 2px dashed #111111; font-size: 14px">
+                    <span>{{r.name}}</span>
+                    <button onClick="{{r.remove}}" aria-label="{{r.label}}" style="width: 44px; height: 44px; border: none; border-left: 2px dashed #111111; background: transparent; color: #B3261E; font-size: 18px; font-weight: 700">×</button>
+                  </div>
+                </sc-for>
+                <div style="display: flex">
+                  <label style="flex-grow: 1; display: flex">
+                    <span style="position: absolute; left: -9999px">Nuevo subgrupo</span>
+                    <input type="text" value="{{newSub}}" onChange="{{onNewSub}}" placeholder="Nuevo subgrupo" style="width: 100%; height: 44px; border: none; padding: 0 12px; font: inherit; font-size: 15px; color: #111111; box-sizing: border-box">
+                  </label>
+                  <button onClick="{{g.addSub}}" style="height: 44px; padding: 0 14px; border: none; border-left: 2px solid #111111; background: #111111; color: #FFFFFF; font-weight: 700">+ AÑADIR</button>
+                </div>
+              </div>
               <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
                 <button onClick="{{cancelEdit}}" style="height: 44px; border: 2px solid #111111; background: #FFFFFF; color: #111111; font-weight: 700">CANCELAR</button>
                 <button onClick="{{g.saveEdit}}" style="height: 44px; border: 2px solid #111111; background: #111111; color: #FFFFFF; font-weight: 700">GUARDAR</button>
@@ -180,7 +196,7 @@ function uid() { return Math.random().toString(36).slice(2, 9); }
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { groups: load() || SEED, view: 'list', groupId: null, subId: null, editId: null, confirmId: null, draft: '', newSub: '' };
+    this.state = { groups: load() || SEED, view: 'list', groupId: null, subId: null, editId: null, confirmId: null, draft: '', newSub: '', draftSubs: [] };
   }
   update(groups, extra) {
     store(groups);
@@ -202,14 +218,26 @@ class Component extends DCLogic {
         name: g.name, subCount: g.subs.length,
         editLabel: 'Editar ' + g.name, deleteLabel: 'Borrar ' + g.name,
         open: function () { self.setState({ view: 'group', groupId: g.id, editId: null, confirmId: null, newSub: '' }); },
-        edit: function () { self.setState({ editId: g.id, confirmId: null, draft: g.name }); },
+        edit: function () { self.setState({ editId: g.id, confirmId: null, draft: g.name, newSub: '', draftSubs: g.subs.slice() }); },
         askDelete: function () { self.setState({ confirmId: g.id, editId: null }); },
         saveEdit: function () {
           var name = self.state.draft.trim().toUpperCase();
           if (!name) return;
-          self.update(self.state.groups.map(function (x) { return x.id === g.id ? Object.assign({}, x, { name: name }) : x; }));
+          var subs = self.state.draftSubs.slice();
+          var pending = self.state.newSub.trim();
+          if (pending) subs.push({ id: uid(), name: pending });
+          self.update(self.state.groups.map(function (x) { return x.id === g.id ? Object.assign({}, x, { name: name, subs: subs }) : x; }), { newSub: '', draftSubs: [] });
         },
-        doDelete: function () { self.update(self.state.groups.filter(function (x) { return x.id !== g.id; })); }
+        doDelete: function () { self.update(self.state.groups.filter(function (x) { return x.id !== g.id; })); },
+        editCount: (s.draftSubs || []).length,
+        subRows: s.editId === g.id ? s.draftSubs.map(function (x) {
+          return { name: x.name, label: 'Quitar ' + x.name, remove: function () { self.setState({ draftSubs: self.state.draftSubs.filter(function (y) { return y.id !== x.id; }) }); } };
+        }) : [],
+        addSub: function () {
+          var name = self.state.newSub.trim();
+          if (!name) return;
+          self.setState({ draftSubs: self.state.draftSubs.concat([{ id: uid(), name: name }]), newSub: '' });
+        }
       }, self.rowState(g.id));
     });
 
