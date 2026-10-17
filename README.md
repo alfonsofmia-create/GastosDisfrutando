@@ -4,8 +4,9 @@ App para llevar la contabilidad de gastos compartidos entre 2 personas (estilo S
 
 ## Estado
 
-Fase de diseño. Estilo elegido: **ticket de caja** (amarillo, monoespaciada, bordes negros gruesos).
+App en uso y diseño en curso. Estilo elegido: **ticket de caja** (amarillo, monoespaciada, bordes negros gruesos).
 
+- **App** (datos compartidos y permanentes): https://claude.ai/artifact/VwKj8MkNLWsE7tS8WjSmZ8 — fuente en [`app/index.html`](app/index.html). Cada persona entra con su cuenta de claude.ai y se registra en Cuenta. Datos en la base de datos del artefacto: colecciones `personas` (id de usuario de claude.ai), `grupos`, `gastos` y el documento `config/categorias`.
 - Lienzo con los bocetos: https://claude.ai/artifact/PePYNCrFDjppLXP556QkFy (privado)
 - Fuentes en [`bocetos/`](bocetos/):
   - `Inicio.dc.html` — inicio: saldo general calculado con los gastos (y desglose por persona), grupos con su saldo (foto configurable), crear grupo, «Añadir gasto» y barra inferior (Inicio · Grupos · Actividad · Cuenta).
@@ -34,7 +35,8 @@ Fase de diseño. Estilo elegido: **ticket de caja** (amarillo, monoespaciada, bo
 - **Tipos de cambio** en subgrupos: solo dibujado. Con la decisión de «solo euros», confirmar si se elimina.
 - **Liquidaciones**: registrar pagos entre personas.
 - **Grupos de ejemplo** (Charming Life / Charming Travels): sin miembros; se asignarán manualmente.
-- **Datos compartidos**: ahora todo se guarda en `localStorage` del navegador (claves `gastosdisfrutando.grupos`, `.cuenta`, `.personas`, `.gastos` y `.categorias`). Pasar a datos compartidos entre las dos personas.
+- **Permisos**: hoy cualquier persona que abra la app puede editar o borrar grupos. Valorar restringirlo.
+- **Bocetos y app**: los bocetos (`bocetos/`) siguen guardando en `localStorage`; la app es la versión real. Mantener ambos alineados.
 
 ## Funcionalidad prevista
 
@@ -48,4 +50,5 @@ Fase de diseño. Estilo elegido: **ticket de caja** (amarillo, monoespaciada, bo
 - La otra persona necesita acceso de edición al artefacto (y probablemente cuenta en claude.ai).
 - Sin notificaciones push ni modo sin conexión fiable.
 - Moneda única: euros.
-- Mientras los datos estén en el navegador, solo existe la persona registrada en ese navegador.
+- La app solo la pueden usar personas de la misma organización de claude.ai, con el artefacto compartido.
+- Capacidad de la base de datos: unos 25.000 documentos (cada gasto es uno).
