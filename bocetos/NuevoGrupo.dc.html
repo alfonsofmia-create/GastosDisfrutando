@@ -12,24 +12,149 @@
 <style>
 body{margin:0}
 a{color:#111111}
+button{font-family:inherit;cursor:pointer}
 </style>
 </helmet>
 <div style="width: 390px; height: 844px; box-sizing: border-box; background: #FFD43B; color: #111111; font-family: 'IBM Plex Mono', monospace; display: flex; flex-direction: column">
   <div style="display: flex; align-items: center; gap: 12px; padding: 16px 16px 10px; border-bottom: 3px solid #111111">
-    <a href="Inicio.dc.html" aria-label="Volver al inicio" style="width: 44px; height: 44px; box-sizing: border-box; border: 3px solid #111111; background: #FFFFFF; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 20px; font-weight: 700">←</a>
+    <a href="Grupos.dc.html" aria-label="Volver a grupos" style="width: 44px; height: 44px; box-sizing: border-box; border: 3px solid #111111; background: #FFFFFF; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 20px; font-weight: 700">←</a>
     <span style="font-size: 22px; font-weight: 700; letter-spacing: 1px">NUEVO_GRUPO</span>
   </div>
-  <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 24px">
-    <div style="border: 3px dashed #111111; padding: 24px; text-align: center; display: flex; flex-direction: column; gap: 8px">
-      <span style="font-size: 18px; font-weight: 700">PENDIENTE DE DEFINIR</span>
-      <span style="font-size: 13px">Formulario para crear un grupo</span>
+
+  <sc-if value="{{isForm}}" hint-placeholder-val="{{true}}">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 14px; padding: 16px; overflow-y: auto">
+      <div style="display: flex; gap: 14px; align-items: flex-end">
+        <label style="width: 96px; height: 96px; flex-shrink: 0; background: #111111; color: #FFD43B; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; border: 3px solid #111111">
+          <input type="file" accept="image/*" aria-label="Elegir foto del grupo" onChange="{{onPhoto}}" style="position: absolute; opacity: 0; width: 1px; height: 1px">
+          <sc-if value="{{photo}}" hint-placeholder-val="{{false}}">
+            <img src="{{photo}}" alt="" style="width: 100%; height: 100%; object-fit: cover">
+          </sc-if>
+          <sc-if value="{{noPhoto}}" hint-placeholder-val="{{true}}">
+            <span style="display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; font-weight: 700">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+              + FOTO
+            </span>
+          </sc-if>
+        </label>
+        <label style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700">NOMBRE DEL GRUPO *
+          <input type="text" value="{{name}}" onChange="{{onName}}" placeholder="Ej.: Casa" style="height: 52px; border: 2px solid #111111; padding: 0 12px; font: inherit; font-size: 17px; font-weight: 400; color: #111111; background: #FFFFFF; box-sizing: border-box; width: 100%">
+        </label>
+      </div>
+
+      <span style="font-size: 13px; font-weight: 700; margin-top: 6px">&gt; SUBGRUPOS ({{subCount}}) · OPCIONAL</span>
+      <div style="display: flex; flex-direction: column; background: #FFFFFF; border: 3px solid #111111">
+        <sc-for list="{{subs}}" as="r" hint-placeholder-count="0">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-left: 12px; border-bottom: 2px dashed #111111; font-size: 15px">
+            <span>{{r.name}}</span>
+            <button onClick="{{r.remove}}" aria-label="{{r.label}}" style="width: 44px; height: 44px; border: none; border-left: 2px dashed #111111; background: transparent; color: #B3261E; font-size: 18px; font-weight: 700">×</button>
+          </div>
+        </sc-for>
+        <div style="display: flex">
+          <label style="flex-grow: 1; display: flex">
+            <span style="position: absolute; left: -9999px">Nuevo subgrupo</span>
+            <input type="text" value="{{newSub}}" onChange="{{onNewSub}}" placeholder="Nuevo subgrupo" style="width: 100%; height: 48px; border: none; padding: 0 12px; font: inherit; font-size: 15px; color: #111111; box-sizing: border-box">
+          </label>
+          <button onClick="{{addSub}}" style="height: 48px; padding: 0 14px; border: none; border-left: 2px solid #111111; background: #111111; color: #FFFFFF; font-weight: 700">+ AÑADIR</button>
+        </div>
+      </div>
+
+      <span style="font-size: 12px">Moneda: EUR (€) · Miembros: tú y tu pareja</span>
+
+      <sc-if value="{{error}}" hint-placeholder-val="{{false}}">
+        <span role="alert" style="font-size: 13px; font-weight: 700; color: #B3261E; background: #FFFFFF; border: 2px solid #B3261E; padding: 8px">{{error}}</span>
+      </sc-if>
+
+      <div style="flex-grow: 1"></div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <a href="Grupos.dc.html" style="text-decoration: none; height: 60px; box-sizing: border-box; border: 3px solid #111111; background: #FFFFFF; color: #111111; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center">CANCELAR</a>
+        <button onClick="{{create}}" style="height: 60px; border: 3px solid #111111; background: #111111; color: #FFFFFF; font-size: 15px; font-weight: 700; box-shadow: 5px 5px 0 #FFFFFF">CREAR GRUPO ↵</button>
+      </div>
     </div>
-  </div>
+  </sc-if>
+
+  <sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px; padding: 24px">
+      <div style="background: #111111; color: #FFFFFF; padding: 18px; display: flex; flex-direction: column; gap: 6px; box-shadow: 6px 6px 0 #FFFFFF">
+        <span style="font-size: 12px; color: #FFD43B">✓ GRUPO CREADO</span>
+        <span style="font-size: 24px; font-weight: 700">{{createdName}}</span>
+        <span style="font-size: 13px">{{createdSubs}} subgrupos</span>
+      </div>
+      <a href="Inicio.dc.html" style="text-decoration: none; height: 56px; box-sizing: border-box; border: 3px solid #111111; background: #111111; color: #FFFFFF; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center">IR A INICIO</a>
+      <a href="Grupos.dc.html" style="text-decoration: none; height: 56px; box-sizing: border-box; border: 3px solid #111111; background: #FFFFFF; color: #111111; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center">VER GRUPOS</a>
+      <button onClick="{{again}}" style="height: 48px; border: 2px dashed #111111; background: transparent; color: #111111; font-size: 14px; font-weight: 700">+ CREAR OTRO</button>
+    </div>
+  </sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+var KEY = 'gastosdisfrutando.grupos';
+var SEED = [
+  { id: 'g1', name: 'CHARMING LIFE', subs: [{ id: 's1', name: 'Casa' }, { id: 's2', name: 'Súper' }] },
+  { id: 'g2', name: 'CHARMING TRAVELS', subs: [{ id: 's3', name: 'Roma 2026' }] }
+];
+function load() {
+  try { var raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+}
+function store(groups) {
+  try { localStorage.setItem(KEY, JSON.stringify(groups)); return true; } catch (e) { return false; }
+}
+function uid() { return Math.random().toString(36).slice(2, 9); }
+function resize(file, cb) {
+  var reader = new FileReader();
+  reader.onload = function () {
+    var img = new Image();
+    img.onload = function () {
+      var c = document.createElement('canvas');
+      c.width = 160; c.height = 160;
+      var side = Math.min(img.width, img.height);
+      c.getContext('2d').drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, 160, 160);
+      cb(c.toDataURL('image/jpeg', 0.8));
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+var EMPTY = { done: false, name: '', photo: '', subs: [], newSub: '', error: '', createdName: '', createdSubs: 0 };
 class Component extends DCLogic {
-  renderVals() { return {}; }
+  constructor(props) {
+    super(props);
+    this.state = Object.assign({}, EMPTY);
+  }
+  renderVals() {
+    var self = this, s = this.state;
+    return {
+      isForm: !s.done, isDone: s.done,
+      name: s.name, photo: s.photo, noPhoto: !s.photo, newSub: s.newSub, error: s.error,
+      subCount: s.subs.length, createdName: s.createdName, createdSubs: s.createdSubs,
+      subs: s.subs.map(function (x) {
+        return { name: x.name, label: 'Quitar ' + x.name, remove: function () { self.setState({ subs: self.state.subs.filter(function (y) { return y.id !== x.id; }) }); } };
+      }),
+      onName: function (e) { self.setState({ name: e.target.value, error: '' }); },
+      onNewSub: function (e) { self.setState({ newSub: e.target.value }); },
+      onPhoto: function (e) {
+        var file = e.target.files && e.target.files[0];
+        if (file) resize(file, function (url) { self.setState({ photo: url }); });
+      },
+      addSub: function () {
+        var n = self.state.newSub.trim();
+        if (!n) return;
+        self.setState({ subs: self.state.subs.concat([{ id: uid(), name: n }]), newSub: '' });
+      },
+      create: function () {
+        var st = self.state;
+        var name = st.name.trim().toUpperCase();
+        if (!name) { self.setState({ error: 'Escribe el nombre del grupo.' }); return; }
+        var groups = load() || SEED;
+        if (groups.some(function (g) { return g.name === name; })) { self.setState({ error: 'Ya existe un grupo con ese nombre.' }); return; }
+        var subs = st.subs.slice();
+        if (st.newSub.trim()) subs.push({ id: uid(), name: st.newSub.trim() });
+        var group = { id: uid(), name: name, photo: st.photo, subs: subs };
+        if (!store(groups.concat([group]))) { self.setState({ error: 'No se pudo guardar. Prueba con una foto más pequeña.' }); return; }
+        self.setState({ done: true, createdName: name, createdSubs: subs.length });
+      },
+      again: function () { self.setState(Object.assign({}, EMPTY)); }
+    };
+  }
 }
 </script>
 </body>

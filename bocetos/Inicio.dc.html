@@ -23,7 +23,7 @@ a{color:#111111}
     </a>
   </div>
 
-  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 14px; padding: 16px">
+  <div style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; padding: 16px; overflow-y: auto">
     <div style="background: #111111; color: #FFFFFF; padding: 14px; display: flex; flex-direction: column; gap: 4px; box-shadow: 6px 6px 0 #FFFFFF">
       <span style="font-size: 12px; color: #FFD43B">EN GENERAL</span>
       <span style="font-size: 26px; font-weight: 700">DEBES 157,48 €</span>
@@ -78,31 +78,64 @@ a{color:#111111}
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+var KEY = 'gastosdisfrutando.grupos';
+var SEED = [
+  { id: 'g1', name: 'CHARMING LIFE', subs: [{ id: 's1', name: 'Casa' }, { id: 's2', name: 'Súper' }] },
+  { id: 'g2', name: 'CHARMING TRAVELS', subs: [{ id: 's3', name: 'Roma 2026' }] }
+];
+// Saldos de ejemplo hasta que existan gastos reales.
+var DEMO = {
+  g1: { balance: '+424,75 € TE DEBEN', color: '#1C6B3A', detail: 'Ana S. te debe 424,75' },
+  g2: { balance: '−582,23 € DEBES', color: '#B3261E', detail: 'Debes a Ana S. 582,23' }
+};
+function load() {
+  try { var raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+}
+function store(groups) {
+  try { localStorage.setItem(KEY, JSON.stringify(groups)); } catch (e) {}
+}
+function resize(file, cb) {
+  var reader = new FileReader();
+  reader.onload = function () {
+    var img = new Image();
+    img.onload = function () {
+      var c = document.createElement('canvas');
+      c.width = 160; c.height = 160;
+      var side = Math.min(img.width, img.height);
+      c.getContext('2d').drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, 160, 160);
+      cb(c.toDataURL('image/jpeg', 0.8));
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { photos: {} };
+    this.state = { groups: load() || SEED };
   }
   setPhoto(id, e) {
-    const file = e.target.files && e.target.files[0];
+    var self = this;
+    var file = e.target.files && e.target.files[0];
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    this.setState({ photos: { ...this.state.photos, [id]: url } });
+    resize(file, function (url) {
+      var groups = (load() || self.state.groups).map(function (g) { return g.id === id ? Object.assign({}, g, { photo: url }) : g; });
+      store(groups);
+      self.setState({ groups: groups });
+    });
   }
   renderVals() {
-    const base = [
-      { id: 'life', name: 'CHARMING LIFE', balance: '+424,75 € TE DEBEN', color: '#1C6B3A', detail: 'Ana S. te debe 424,75' },
-      { id: 'travels', name: 'CHARMING TRAVELS', balance: '−582,23 € DEBES', color: '#B3261E', detail: 'Debes a Ana S. 582,23' }
-    ];
-    const photos = this.state.photos;
+    var self = this;
     return {
-      groups: base.map((g) => ({
-        ...g,
-        photo: photos[g.id] || '',
-        noPhoto: !photos[g.id],
-        photoLabel: 'Cambiar foto de ' + g.name,
-        onPhoto: (e) => this.setPhoto(g.id, e)
-      }))
+      groups: this.state.groups.map(function (g) {
+        var d = DEMO[g.id] || { balance: 'SIN MOVIMIENTOS', color: '#111111', detail: g.subs.length + ' subgrupos' };
+        return {
+          id: g.id, name: g.name, balance: d.balance, color: d.color, detail: d.detail,
+          photo: g.photo || '', noPhoto: !g.photo,
+          photoLabel: 'Cambiar foto de ' + g.name,
+          onPhoto: function (e) { self.setPhoto(g.id, e); }
+        };
+      })
     };
   }
 }
