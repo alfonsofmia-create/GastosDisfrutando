@@ -8,10 +8,10 @@ Fase de diseño. Estilo elegido: **ticket de caja** (amarillo, monoespaciada, bo
 
 - Lienzo con los bocetos: https://claude.ai/artifact/PePYNCrFDjppLXP556QkFy (privado)
 - Fuentes en [`bocetos/`](bocetos/):
-  - `Inicio.dc.html` — inicio: deuda total, grupos (con foto configurable), crear grupo, «Añadir gasto» y barra inferior (Grupos · Actividad · Cuenta). Enlaces navegables.
+  - `Inicio.dc.html` — inicio: deuda total, grupos (con foto configurable), crear grupo, «Añadir gasto» y barra inferior (Inicio · Grupos · Actividad · Cuenta). Enlaces navegables.
   - `NuevoGrupo.dc.html` — crear grupo (pendiente de definir).
   - `AnadirGasto.dc.html` — añadir gasto (pendiente de definir).
-  - `Grupos.dc.html` — grupos existentes y opción de crear (pendiente de definir).
+  - `Grupos.dc.html` — lista de grupos (editar, borrar con confirmación, añadir); al abrir un grupo, sus subgrupos (1 nivel: crear, editar, borrar); en cada subgrupo, «Tipos de cambio» (solo dibujado, pendiente de definir).
   - `Actividad.dc.html` — últimos movimientos agrupados por día.
   - `Cuenta.dc.html` — datos básicos del usuario: editar nombre, email y moneda (con validación) y foto de perfil. De momento se guarda solo en el navegador.
   - `canvas.json` — disposición de los bocetos en el lienzo.

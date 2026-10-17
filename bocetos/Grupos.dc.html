@@ -12,21 +12,144 @@
 <style>
 body{margin:0}
 a{color:#111111}
+button{font-family:inherit;cursor:pointer}
 </style>
 </helmet>
 <div style="width: 390px; height: 844px; box-sizing: border-box; background: #FFD43B; color: #111111; font-family: 'IBM Plex Mono', monospace; display: flex; flex-direction: column">
+
   <div style="display: flex; align-items: center; gap: 12px; padding: 16px 16px 10px; border-bottom: 3px solid #111111">
-    <a href="Inicio.dc.html" aria-label="Volver al inicio" style="width: 44px; height: 44px; box-sizing: border-box; border: 3px solid #111111; background: #FFFFFF; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 20px; font-weight: 700">←</a>
-    <span style="font-size: 22px; font-weight: 700; letter-spacing: 1px">GRUPOS</span>
+    <sc-if value="{{isList}}" hint-placeholder-val="{{true}}">
+      <a href="Inicio.dc.html" aria-label="Volver al inicio" style="width: 44px; height: 44px; flex-shrink: 0; box-sizing: border-box; border: 3px solid #111111; background: #FFFFFF; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 20px; font-weight: 700">←</a>
+    </sc-if>
+    <sc-if value="{{notList}}" hint-placeholder-val="{{false}}">
+      <button onClick="{{back}}" aria-label="Volver" style="width: 44px; height: 44px; flex-shrink: 0; border: 3px solid #111111; background: #FFFFFF; color: #111111; font-size: 20px; font-weight: 700">←</button>
+    </sc-if>
+    <span style="font-size: 20px; font-weight: 700; letter-spacing: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1">{{title}}</span>
+    <sc-if value="{{isList}}" hint-placeholder-val="{{true}}">
+      <a href="NuevoGrupo.dc.html" aria-label="Crear grupo" style="width: 44px; height: 44px; flex-shrink: 0; box-sizing: border-box; border: 3px solid #111111; background: #FFFFFF; color: #111111; display: flex; align-items: center; justify-content: center">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="13" cy="8" r="3.5"/><path d="M6.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><path d="M4 7v6"/><path d="M1 10h6"/></svg>
+      </a>
+    </sc-if>
   </div>
-  <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 24px">
-    <div style="border: 3px dashed #111111; padding: 24px; text-align: center; display: flex; flex-direction: column; gap: 8px">
-      <span style="font-size: 18px; font-weight: 700">PENDIENTE DE DEFINIR</span>
-      <span style="font-size: 13px">Grupos existentes y opción de crear</span>
-    </div>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 12px; padding: 16px; overflow-y: auto">
+
+    <!-- LISTA DE GRUPOS -->
+    <sc-if value="{{isList}}" hint-placeholder-val="{{true}}">
+      <span style="font-size: 13px; font-weight: 700">&gt; TUS GRUPOS ({{groupCount}})</span>
+      <sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
+        <div style="background: #FFFFFF; border: 3px solid #111111; display: flex; flex-direction: column">
+          <sc-if value="{{g.isEditing}}" hint-placeholder-val="{{false}}">
+            <div style="padding: 12px; display: flex; flex-direction: column; gap: 10px">
+              <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700">NOMBRE DEL GRUPO
+                <input type="text" value="{{draft}}" onChange="{{onDraft}}" style="height: 48px; border: 2px solid #111111; padding: 0 12px; font: inherit; font-size: 16px; font-weight: 400; color: #111111; box-sizing: border-box; width: 100%">
+              </label>
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+                <button onClick="{{cancelEdit}}" style="height: 44px; border: 2px solid #111111; background: #FFFFFF; color: #111111; font-weight: 700">CANCELAR</button>
+                <button onClick="{{g.saveEdit}}" style="height: 44px; border: 2px solid #111111; background: #111111; color: #FFFFFF; font-weight: 700">GUARDAR</button>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{g.isConfirming}}" hint-placeholder-val="{{false}}">
+            <div style="padding: 12px; display: flex; flex-direction: column; gap: 10px">
+              <span style="font-size: 14px; font-weight: 700">¿BORRAR «{{g.name}}» Y SUS {{g.subCount}} SUBGRUPOS?</span>
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+                <button onClick="{{cancelEdit}}" style="height: 44px; border: 2px solid #111111; background: #FFFFFF; color: #111111; font-weight: 700">NO</button>
+                <button onClick="{{g.doDelete}}" style="height: 44px; border: 2px solid #B3261E; background: #B3261E; color: #FFFFFF; font-weight: 700">SÍ, BORRAR</button>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{g.isNormal}}" hint-placeholder-val="{{true}}">
+            <div style="display: flex; align-items: stretch">
+              <button onClick="{{g.open}}" style="flex-grow: 1; min-width: 0; border: none; background: transparent; color: #111111; text-align: left; padding: 12px; display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 16px; font-weight: 700">{{g.name}}</span>
+                <span style="font-size: 12px">{{g.subCount}} subgrupos ›</span>
+              </button>
+              <button onClick="{{g.edit}}" aria-label="{{g.editLabel}}" style="width: 52px; border: none; border-left: 2px dashed #111111; background: transparent; color: #111111; display: flex; align-items: center; justify-content: center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>
+              </button>
+              <button onClick="{{g.askDelete}}" aria-label="{{g.deleteLabel}}" style="width: 52px; border: none; border-left: 2px dashed #111111; background: transparent; color: #B3261E; display: flex; align-items: center; justify-content: center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg>
+              </button>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+      <sc-if value="{{noGroups}}" hint-placeholder-val="{{false}}">
+        <div style="border: 3px dashed #111111; padding: 20px; text-align: center; font-size: 14px">NO HAY GRUPOS TODAVÍA</div>
+      </sc-if>
+      <a href="NuevoGrupo.dc.html" style="text-decoration: none; height: 56px; box-sizing: border-box; border: 3px solid #111111; background: #111111; color: #FFFFFF; font-size: 16px; font-weight: 700; box-shadow: 5px 5px 0 #FFFFFF; display: flex; align-items: center; justify-content: center; margin-top: 6px">+ AÑADIR GRUPO</a>
+    </sc-if>
+
+    <!-- DETALLE DE GRUPO: SUBGRUPOS -->
+    <sc-if value="{{isGroup}}" hint-placeholder-val="{{false}}">
+      <span style="font-size: 13px; font-weight: 700">&gt; SUBGRUPOS ({{subCount}})</span>
+      <sc-for list="{{subs}}" as="s" hint-placeholder-count="2">
+        <div style="background: #FFFFFF; border: 3px solid #111111">
+          <sc-if value="{{s.isEditing}}" hint-placeholder-val="{{false}}">
+            <div style="padding: 12px; display: flex; flex-direction: column; gap: 10px">
+              <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700">NOMBRE DEL SUBGRUPO
+                <input type="text" value="{{draft}}" onChange="{{onDraft}}" style="height: 48px; border: 2px solid #111111; padding: 0 12px; font: inherit; font-size: 16px; font-weight: 400; color: #111111; box-sizing: border-box; width: 100%">
+              </label>
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+                <button onClick="{{cancelEdit}}" style="height: 44px; border: 2px solid #111111; background: #FFFFFF; color: #111111; font-weight: 700">CANCELAR</button>
+                <button onClick="{{s.saveEdit}}" style="height: 44px; border: 2px solid #111111; background: #111111; color: #FFFFFF; font-weight: 700">GUARDAR</button>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{s.isConfirming}}" hint-placeholder-val="{{false}}">
+            <div style="padding: 12px; display: flex; flex-direction: column; gap: 10px">
+              <span style="font-size: 14px; font-weight: 700">¿BORRAR «{{s.name}}»?</span>
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+                <button onClick="{{cancelEdit}}" style="height: 44px; border: 2px solid #111111; background: #FFFFFF; color: #111111; font-weight: 700">NO</button>
+                <button onClick="{{s.doDelete}}" style="height: 44px; border: 2px solid #B3261E; background: #B3261E; color: #FFFFFF; font-weight: 700">SÍ, BORRAR</button>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{s.isNormal}}" hint-placeholder-val="{{true}}">
+            <div style="display: flex; align-items: stretch">
+              <button onClick="{{s.open}}" style="flex-grow: 1; min-width: 0; border: none; background: transparent; color: #111111; text-align: left; padding: 14px 12px; font-size: 16px; font-weight: 700">{{s.name}} ›</button>
+              <button onClick="{{s.edit}}" aria-label="{{s.editLabel}}" style="width: 52px; border: none; border-left: 2px dashed #111111; background: transparent; color: #111111; display: flex; align-items: center; justify-content: center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>
+              </button>
+              <button onClick="{{s.askDelete}}" aria-label="{{s.deleteLabel}}" style="width: 52px; border: none; border-left: 2px dashed #111111; background: transparent; color: #B3261E; display: flex; align-items: center; justify-content: center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg>
+              </button>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+      <sc-if value="{{noSubs}}" hint-placeholder-val="{{false}}">
+        <div style="border: 3px dashed #111111; padding: 20px; text-align: center; font-size: 14px">SIN SUBGRUPOS</div>
+      </sc-if>
+      <div style="background: #FFFFFF; border: 3px solid #111111; padding: 12px; display: flex; flex-direction: column; gap: 10px; box-shadow: 6px 6px 0 #111111; margin-top: 6px">
+        <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700">&gt; NUEVO SUBGRUPO
+          <input type="text" value="{{newSub}}" onChange="{{onNewSub}}" placeholder="Ej.: Viaje a Roma" style="height: 48px; border: 2px solid #111111; padding: 0 12px; font: inherit; font-size: 16px; font-weight: 400; color: #111111; box-sizing: border-box; width: 100%">
+        </label>
+        <button onClick="{{addSub}}" style="height: 48px; border: 2px solid #111111; background: #111111; color: #FFFFFF; font-size: 15px; font-weight: 700">+ CREAR SUBGRUPO</button>
+      </div>
+    </sc-if>
+
+    <!-- DETALLE DE SUBGRUPO -->
+    <sc-if value="{{isSub}}" hint-placeholder-val="{{false}}">
+      <span style="font-size: 12px">{{parentName}} › {{subName}}</span>
+      <span style="font-size: 13px; font-weight: 700; margin-top: 6px">&gt; TIPOS DE CAMBIO</span>
+      <div style="background: #FFFFFF; border: 3px solid #111111; display: flex; flex-direction: column">
+        <div style="display: flex; justify-content: space-between; padding: 12px; border-bottom: 2px dashed #111111; font-size: 14px"><span>MONEDA BASE</span><span style="font-weight: 700">EUR (€)</span></div>
+        <div style="display: flex; justify-content: space-between; padding: 12px; border-bottom: 2px dashed #111111; font-size: 14px"><span>1 USD</span><span style="font-weight: 700">[—] €</span></div>
+        <div style="display: flex; justify-content: space-between; padding: 12px; font-size: 14px"><span>1 GBP</span><span style="font-weight: 700">[—] €</span></div>
+      </div>
+      <button disabled="{{yes}}" style="height: 48px; border: 2px dashed #111111; background: transparent; color: #111111; font-size: 14px; font-weight: 700; cursor: not-allowed">+ AÑADIR TIPO DE CAMBIO</button>
+      <div style="border: 3px dashed #111111; padding: 12px; text-align: center; font-size: 13px">PENDIENTE DE DEFINIR</div>
+    </sc-if>
   </div>
-  <nav style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 3px solid #111111; background: #FFFFFF">
-    <a href="Grupos.dc.html" style="text-decoration: none; height: 68px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: #111111; color: #FFD43B; font-size: 12px; font-weight: 700">
+
+  <nav style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 3px solid #111111; background: #FFFFFF">
+    <a href="Inicio.dc.html" style="text-decoration: none; height: 68px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #111111; font-size: 12px">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>
+      INICIO
+    </a>
+    <a href="Grupos.dc.html" style="text-decoration: none; height: 68px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: #111111; color: #FFD43B; font-size: 12px; font-weight: 700; border-left: 3px solid #111111">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M15 14c3 0 6 1.8 6 5"/></svg>
       GRUPOS
     </a>
@@ -42,8 +165,93 @@ a{color:#111111}
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+var KEY = 'gastosdisfrutando.grupos';
+var SEED = [
+  { id: 'g1', name: 'CHARMING LIFE', subs: [{ id: 's1', name: 'Casa' }, { id: 's2', name: 'Súper' }] },
+  { id: 'g2', name: 'CHARMING TRAVELS', subs: [{ id: 's3', name: 'Roma 2026' }] }
+];
+function load() {
+  try { var raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+}
+function store(groups) {
+  try { localStorage.setItem(KEY, JSON.stringify(groups)); } catch (e) {}
+}
+function uid() { return Math.random().toString(36).slice(2, 9); }
 class Component extends DCLogic {
-  renderVals() { return {}; }
+  constructor(props) {
+    super(props);
+    this.state = { groups: load() || SEED, view: 'list', groupId: null, subId: null, editId: null, confirmId: null, draft: '', newSub: '' };
+  }
+  update(groups, extra) {
+    store(groups);
+    this.setState(Object.assign({ groups: groups, editId: null, confirmId: null, draft: '' }, extra || {}));
+  }
+  rowState(id) {
+    var s = this.state;
+    return { isEditing: s.editId === id, isConfirming: s.confirmId === id, isNormal: s.editId !== id && s.confirmId !== id };
+  }
+  renderVals() {
+    var self = this, s = this.state;
+    var group = s.groups.filter(function (g) { return g.id === s.groupId; })[0];
+    var sub = group && group.subs.filter(function (x) { return x.id === s.subId; })[0];
+    var view = s.view === 'sub' && !sub ? (group ? 'group' : 'list') : (s.view === 'group' && !group ? 'list' : s.view);
+    var title = view === 'list' ? 'GRUPOS' : view === 'group' ? group.name : sub.name.toUpperCase();
+
+    var groups = s.groups.map(function (g) {
+      return Object.assign({
+        name: g.name, subCount: g.subs.length,
+        editLabel: 'Editar ' + g.name, deleteLabel: 'Borrar ' + g.name,
+        open: function () { self.setState({ view: 'group', groupId: g.id, editId: null, confirmId: null, newSub: '' }); },
+        edit: function () { self.setState({ editId: g.id, confirmId: null, draft: g.name }); },
+        askDelete: function () { self.setState({ confirmId: g.id, editId: null }); },
+        saveEdit: function () {
+          var name = self.state.draft.trim().toUpperCase();
+          if (!name) return;
+          self.update(self.state.groups.map(function (x) { return x.id === g.id ? Object.assign({}, x, { name: name }) : x; }));
+        },
+        doDelete: function () { self.update(self.state.groups.filter(function (x) { return x.id !== g.id; })); }
+      }, self.rowState(g.id));
+    });
+
+    function patchSubs(fn) {
+      return self.state.groups.map(function (x) { return x.id === group.id ? Object.assign({}, x, { subs: fn(x.subs) }) : x; });
+    }
+    var subs = group ? group.subs.map(function (x) {
+      return Object.assign({
+        name: x.name, editLabel: 'Editar ' + x.name, deleteLabel: 'Borrar ' + x.name,
+        open: function () { self.setState({ view: 'sub', subId: x.id, editId: null, confirmId: null }); },
+        edit: function () { self.setState({ editId: x.id, confirmId: null, draft: x.name }); },
+        askDelete: function () { self.setState({ confirmId: x.id, editId: null }); },
+        saveEdit: function () {
+          var name = self.state.draft.trim();
+          if (!name) return;
+          self.update(patchSubs(function (l) { return l.map(function (y) { return y.id === x.id ? { id: y.id, name: name } : y; }); }));
+        },
+        doDelete: function () { self.update(patchSubs(function (l) { return l.filter(function (y) { return y.id !== x.id; }); })); }
+      }, self.rowState(x.id));
+    }) : [];
+
+    return {
+      title: title,
+      isList: view === 'list', notList: view !== 'list', isGroup: view === 'group', isSub: view === 'sub',
+      groups: groups, groupCount: groups.length, noGroups: groups.length === 0,
+      subs: subs, subCount: subs.length, noSubs: subs.length === 0,
+      parentName: group ? group.name : '', subName: sub ? sub.name : '',
+      draft: s.draft, newSub: s.newSub, yes: true,
+      onDraft: function (e) { self.setState({ draft: e.target.value }); },
+      onNewSub: function (e) { self.setState({ newSub: e.target.value }); },
+      cancelEdit: function () { self.setState({ editId: null, confirmId: null, draft: '' }); },
+      addSub: function () {
+        var name = self.state.newSub.trim();
+        if (!name || !group) return;
+        self.update(patchSubs(function (l) { return l.concat([{ id: uid(), name: name }]); }), { newSub: '' });
+      },
+      back: function () {
+        if (view === 'sub') self.setState({ view: 'group', subId: null });
+        else self.setState({ view: 'list', groupId: null, editId: null, confirmId: null });
+      }
+    };
+  }
 }
 </script>
 </body>
