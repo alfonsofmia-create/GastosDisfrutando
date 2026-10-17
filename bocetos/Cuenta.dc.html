@@ -12,6 +12,7 @@
 <style>
 body{margin:0}
 a{color:#111111}
+button{font-family:inherit;cursor:pointer}
 </style>
 </helmet>
 <div style="width: 390px; height: 844px; box-sizing: border-box; background: #FFD43B; color: #111111; font-family: 'IBM Plex Mono', monospace; display: flex; flex-direction: column">
@@ -22,19 +23,61 @@ a{color:#111111}
 
   <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 16px; padding: 16px">
     <div style="display: flex; align-items: center; gap: 14px; background: #111111; color: #FFFFFF; padding: 14px; box-shadow: 6px 6px 0 #FFFFFF">
-      <span style="width: 64px; height: 64px; flex-shrink: 0; background: #FFD43B; color: #111111; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700">[A]</span>
+      <label style="width: 64px; height: 64px; flex-shrink: 0; background: #FFD43B; color: #111111; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; cursor: pointer; position: relative; overflow: hidden">
+        <input type="file" accept="image/*" aria-label="Cambiar foto de perfil" onChange="{{onAvatar}}" style="position: absolute; opacity: 0; width: 1px; height: 1px">
+        <sc-if value="{{avatar}}" hint-placeholder-val="{{false}}">
+          <img src="{{avatar}}" alt="" style="width: 100%; height: 100%; object-fit: cover">
+        </sc-if>
+        <sc-if value="{{noAvatar}}" hint-placeholder-val="{{true}}">
+          <span>{{initial}}</span>
+        </sc-if>
+      </label>
       <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
-        <span style="font-size: 20px; font-weight: 700">[TU NOMBRE]</span>
-        <span style="font-size: 12px; color: #FFD43B">[tu@email.com]</span>
+        <span style="font-size: 20px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{shownName}}</span>
+        <span style="font-size: 12px; color: #FFD43B; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{shownEmail}}</span>
       </span>
     </div>
 
     <span style="font-size: 13px; font-weight: 700; margin-top: 6px">&gt; DATOS</span>
-    <div style="background: #FFFFFF; border: 3px solid #111111; display: flex; flex-direction: column">
-      <div style="display: flex; justify-content: space-between; padding: 12px; border-bottom: 2px dashed #111111; font-size: 14px"><span>NOMBRE</span><span style="font-weight: 700">[TU NOMBRE]</span></div>
-      <div style="display: flex; justify-content: space-between; padding: 12px; border-bottom: 2px dashed #111111; font-size: 14px"><span>EMAIL</span><span style="font-weight: 700">[tu@email.com]</span></div>
-      <div style="display: flex; justify-content: space-between; padding: 12px; font-size: 14px"><span>MONEDA</span><span style="font-weight: 700">EUR (€)</span></div>
-    </div>
+
+    <sc-if value="{{viewing}}" hint-placeholder-val="{{true}}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div style="background: #FFFFFF; border: 3px solid #111111; display: flex; flex-direction: column">
+          <div style="display: flex; justify-content: space-between; gap: 10px; padding: 12px; border-bottom: 2px dashed #111111; font-size: 14px"><span>NOMBRE</span><span style="font-weight: 700; text-align: right">{{shownName}}</span></div>
+          <div style="display: flex; justify-content: space-between; gap: 10px; padding: 12px; border-bottom: 2px dashed #111111; font-size: 14px"><span>EMAIL</span><span style="font-weight: 700; text-align: right; word-break: break-all">{{shownEmail}}</span></div>
+          <div style="display: flex; justify-content: space-between; gap: 10px; padding: 12px; font-size: 14px"><span>MONEDA</span><span style="font-weight: 700">{{currencyLabel}}</span></div>
+        </div>
+        <sc-if value="{{saved}}" hint-placeholder-val="{{false}}">
+          <span role="status" style="font-size: 13px; font-weight: 700">✓ DATOS GUARDADOS</span>
+        </sc-if>
+        <button onClick="{{startEdit}}" style="height: 56px; border: 3px solid #111111; background: #111111; color: #FFFFFF; font-size: 16px; font-weight: 700; box-shadow: 5px 5px 0 #FFFFFF">EDITAR DATOS</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{editing}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700">NOMBRE
+          <input type="text" value="{{draftName}}" onChange="{{onName}}" autocomplete="name" style="height: 48px; border: 2px solid #111111; padding: 0 12px; font: inherit; font-size: 16px; font-weight: 400; color: #111111; background: #FFFFFF; box-sizing: border-box; width: 100%">
+        </label>
+        <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700">EMAIL
+          <input type="email" value="{{draftEmail}}" onChange="{{onEmail}}" autocomplete="email" style="height: 48px; border: 2px solid #111111; padding: 0 12px; font: inherit; font-size: 16px; font-weight: 400; color: #111111; background: #FFFFFF; box-sizing: border-box; width: 100%">
+        </label>
+        <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700">MONEDA
+          <select value="{{draftCurrency}}" onChange="{{onCurrency}}" style="height: 48px; border: 2px solid #111111; padding: 0 12px; font: inherit; font-size: 16px; font-weight: 400; color: #111111; background: #FFFFFF">
+            <option value="EUR">EUR (€)</option>
+            <option value="USD">USD ($)</option>
+            <option value="GBP">GBP (£)</option>
+          </select>
+        </label>
+        <sc-if value="{{error}}" hint-placeholder-val="{{false}}">
+          <span role="alert" style="font-size: 13px; font-weight: 700; color: #B3261E; background: #FFFFFF; border: 2px solid #B3261E; padding: 8px">{{error}}</span>
+        </sc-if>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <button onClick="{{cancel}}" style="height: 56px; border: 3px solid #111111; background: #FFFFFF; color: #111111; font-size: 15px; font-weight: 700">CANCELAR</button>
+          <button onClick="{{save}}" style="height: 56px; border: 3px solid #111111; background: #111111; color: #FFFFFF; font-size: 15px; font-weight: 700">GUARDAR ↵</button>
+        </div>
+      </div>
+    </sc-if>
   </div>
 
   <nav style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 3px solid #111111; background: #FFFFFF">
@@ -54,8 +97,77 @@ a{color:#111111}
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+var KEY = 'gastosdisfrutando.cuenta';
+var LABELS = { EUR: 'EUR (€)', USD: 'USD ($)', GBP: 'GBP (£)' };
+function load() {
+  try { var raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+}
+function store(data) {
+  try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) {}
+}
 class Component extends DCLogic {
-  renderVals() { return {}; }
+  constructor(props) {
+    super(props);
+    var d = load() || {};
+    this.state = {
+      name: d.name || '', email: d.email || '', currency: d.currency || 'EUR', avatar: d.avatar || '',
+      editing: false, saved: false, error: '',
+      draftName: '', draftEmail: '', draftCurrency: 'EUR'
+    };
+  }
+  persist(patch) {
+    var s = Object.assign({}, this.state, patch);
+    store({ name: s.name, email: s.email, currency: s.currency, avatar: s.avatar });
+  }
+  renderVals() {
+    var s = this.state;
+    var self = this;
+    var shownName = s.name || '[TU NOMBRE]';
+    return {
+      shownName: shownName,
+      shownEmail: s.email || '[tu@email.com]',
+      initial: s.name ? s.name.trim().charAt(0).toUpperCase() : '?',
+      currencyLabel: LABELS[s.currency] || s.currency,
+      avatar: s.avatar, noAvatar: !s.avatar,
+      viewing: !s.editing, editing: s.editing, saved: s.saved, error: s.error,
+      draftName: s.draftName, draftEmail: s.draftEmail, draftCurrency: s.draftCurrency,
+      startEdit: function () {
+        self.setState({ editing: true, saved: false, error: '', draftName: s.name, draftEmail: s.email, draftCurrency: s.currency });
+      },
+      cancel: function () { self.setState({ editing: false, error: '' }); },
+      onName: function (e) { self.setState({ draftName: e.target.value }); },
+      onEmail: function (e) { self.setState({ draftEmail: e.target.value }); },
+      onCurrency: function (e) { self.setState({ draftCurrency: e.target.value }); },
+      save: function () {
+        var name = self.state.draftName.trim();
+        var email = self.state.draftEmail.trim();
+        if (!name) { self.setState({ error: 'Escribe tu nombre.' }); return; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { self.setState({ error: 'El email no es válido.' }); return; }
+        var patch = { name: name, email: email, currency: self.state.draftCurrency, editing: false, saved: true, error: '' };
+        self.persist(patch);
+        self.setState(patch);
+      },
+      onAvatar: function (e) {
+        var file = e.target.files && e.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+          var img = new Image();
+          img.onload = function () {
+            var c = document.createElement('canvas');
+            c.width = 128; c.height = 128;
+            var side = Math.min(img.width, img.height);
+            c.getContext('2d').drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, 128, 128);
+            var url = c.toDataURL('image/jpeg', 0.8);
+            self.persist({ avatar: url });
+            self.setState({ avatar: url });
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+  }
 }
 </script>
 </body>

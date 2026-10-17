@@ -13,7 +13,7 @@ Fase de diseño. Estilo elegido: **ticket de caja** (amarillo, monoespaciada, bo
   - `AnadirGasto.dc.html` — añadir gasto (pendiente de definir).
   - `Grupos.dc.html` — grupos existentes y opción de crear (pendiente de definir).
   - `Actividad.dc.html` — últimos movimientos agrupados por día.
-  - `Cuenta.dc.html` — datos básicos del usuario.
+  - `Cuenta.dc.html` — datos básicos del usuario: editar nombre, email y moneda (con validación) y foto de perfil. De momento se guarda solo en el navegador.
   - `canvas.json` — disposición de los bocetos en el lienzo.
 
 ## Funcionalidad prevista
