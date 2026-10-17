@@ -163,7 +163,7 @@ var IC = {
 };
 
 // ---------- vistas ----------
-function top(title, back, right) {
+function topBar(title, back, right) {
   return '<div class="top">' + (back ? '<button class="sq" data-act="' + back + '" aria-label="Volver">←</button>' : '') +
     '<h1>' + h(title) + '</h1>' + (right || '') + '</div>';
 }
@@ -194,7 +194,7 @@ function vInicio() {
   var net = balances(S.expenses), t = total(net);
   var head = !S.me ? 'SIN CUENTA' : t > 0 ? 'TE DEBEN ' + eur(t) : t < 0 ? 'DEBES ' + eur(t) : 'TODO SALDADO';
   var color = t > 0 ? 'var(--good-on-ink)' : t < 0 ? 'var(--bad-on-ink)' : 'var(--card)';
-  var html = top('GASTOS_DISFRUTANDO', null, '<button class="sq" data-act="go" data-v="nuevo" aria-label="Crear grupo">' + IC.addGroup + '</button>') + '<main>' + notice() +
+  var html = topBar('GASTOS_DISFRUTANDO', null, '<button class="sq" data-act="go" data-v="nuevo" aria-label="Crear grupo">' + IC.addGroup + '</button>') + '<main>' + notice() +
     '<div class="hero"><small>EN GENERAL</small><strong style="color:' + color + '">' + h(head) + '</strong>' +
     netLines(net).map(function (l) { return '<span class="muted">' + h(l) + '</span>'; }).join('') + '</div>' +
     '<span class="sec">&gt; GRUPOS</span>';
@@ -220,7 +220,7 @@ function vActividad() {
     var d = days[days.length - 1]; if (!d || d.label !== label) { d = { label: label, items: [] }; days.push(d); }
     d.items.push(x);
   });
-  var html = top('ACTIVIDAD', null) + '<main>' + notice();
+  var html = topBar('ACTIVIDAD', null) + '<main>' + notice();
   if (!days.length) html += '<div class="empty">SIN MOVIMIENTOS TODAVÍA</div>';
   days.forEach(function (d) {
     html += '<span class="sec">&gt; ' + d.label + '</span><div class="box">' + d.items.map(function (x) {
@@ -239,7 +239,7 @@ function vActividad() {
 
 function vCuenta() {
   var p = S.people[S.me] || {};
-  var html = top('CUENTA', null) + '<main>' + (S.offline || !S.me ? notice() : '') +
+  var html = topBar('CUENTA', null) + '<main>' + (S.offline || !S.me ? notice() : '') +
     '<div class="hero" style="flex-direction:row;align-items:center;gap:14px"><label class="avatar">' +
     '<input type="file" accept="image/*" data-in="avatar" aria-label="Cambiar foto de perfil">' +
     (p.avatar ? '<img src="' + h(p.avatar) + '" alt="">' : h(p.name ? p.name.charAt(0).toUpperCase() : '?')) + '</label>' +
@@ -264,7 +264,7 @@ function vCuenta() {
 }
 
 function vNuevo() {
-  var html = top('NUEVO_GRUPO', 'goGroups') + '<main>';
+  var html = topBar('NUEVO_GRUPO', 'goGroups') + '<main>';
   if (NG.done) {
     return html + '<div class="hero"><small>✓ GRUPO CREADO</small><strong>' + h(NG.done.name) + '</strong><span class="muted">' + NG.done.subs + ' subgrupos</span></div>' +
       '<button class="btn" data-act="go" data-v="inicio">IR A INICIO</button><button class="btn alt" data-act="goGroups">VER GRUPOS</button>' +
@@ -290,7 +290,7 @@ function vGrupos() {
   if (G.mode === 'sub' && !sub) G.mode = g ? 'group' : 'list';
   if (G.mode === 'group' && !g) G.mode = 'list';
   var title = G.mode === 'list' ? 'GRUPOS' : G.mode === 'group' ? g.name : sub.name.toUpperCase();
-  var html = top(title, G.mode === 'list' ? null : 'gBack', G.mode === 'list' ? '<button class="sq" data-act="go" data-v="nuevo" aria-label="Crear grupo">' + IC.addGroup + '</button>' : '') + '<main>' +
+  var html = topBar(title, G.mode === 'list' ? null : 'gBack', G.mode === 'list' ? '<button class="sq" data-act="go" data-v="nuevo" aria-label="Crear grupo">' + IC.addGroup + '</button>' : '') + '<main>' +
     (G.err ? '<span class="err" role="alert">' + h(G.err) + '</span>' : '');
   var ppl = peopleList();
   function memberChips(pool) {
@@ -374,7 +374,7 @@ function agCtx() {
   return { g: g, subs: subs, sub: sub, members: members, sp: split(members) };
 }
 function vGasto() {
-  var html = top('AÑADIR_GASTO', null) + '<main>';
+  var html = topBar('AÑADIR_GASTO', null) + '<main>';
   if (AG.done) {
     return html + '<div class="hero"><small>✓ GASTO GUARDADO</small><strong>' + h(AG.done.amount) + '</strong><span class="muted">' + h(AG.done.text) + '</span></div>' +
       '<button class="btn" data-act="go" data-v="inicio">IR A INICIO</button><button class="dash" data-act="agAgain">+ AÑADIR OTRO</button></main>' + navBar();
